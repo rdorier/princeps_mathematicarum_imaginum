@@ -1,0 +1,6 @@
+[package]
+name = "princeps_mathematicarum_imaginum"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
