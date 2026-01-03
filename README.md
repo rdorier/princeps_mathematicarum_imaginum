@@ -1,6 +1,7 @@
 # Princeps Mathematicarum Imaginum: scientia et ars in imagine coniunctae.
 
-The Mathematic Prince of Image : science and art gathered. A little project aiming at manipulating images.
+The Mathematic Prince of Image : science and art gathered. A little project aiming at manipulating images.  
+The project name is a reference to Carl Friedrich Gauss, considered as the Prince of Mathematics.  
 
 ## Goals :
 1. TODO : Basic pixels manipulation with `image` create(read an image, and apply a simple transformation like color inversion)
