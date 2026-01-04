@@ -3,6 +3,10 @@
 The Mathematic Prince of Image : science and art gathered. A little project aiming at manipulating images.  
 The project name is a reference to Carl Friedrich Gauss, considered as the Prince of Mathematics.  
 
+## Command-Line Interface usage
+
+The tool works as a CLI. You must pass two arguments : the first being the path to the input image you want to treat, and the second one, the path to the resulting image.
+
 ## Goals :
 1. TODO : Basic pixels manipulation with `image` create(read an image, and apply a simple transformation like color inversion)
 2. TODO : Implement a convolution filter (like Sobel one for edges detection)
