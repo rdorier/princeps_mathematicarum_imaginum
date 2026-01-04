@@ -1,9 +1,10 @@
 use std::env;
-use std::io::ErrorKind;
 use image::ImageReader;
 use image::Pixel;
+use anyhow::{Context, Result};
 
-fn main() -> Result<(), image::ImageError> {
+
+fn main() -> Result<()> {
     // collect arguments pass to the tool using CLI
     let args: Vec<String> = env::args().collect();
 
@@ -13,18 +14,14 @@ fn main() -> Result<(), image::ImageError> {
     let output_file = &args[2];
 
     // try to open input image
-    let reader = ImageReader::open(input_file).unwrap_or_else(|error| {
-        if error.kind() == ErrorKind::NotFound {
-            panic!("Given input image not found !");
-        }
-        else {
-            panic!("Cannot read given input image !");
-        }
-    })
-    .with_guessed_format()?;
+    let reader = ImageReader::open(input_file)
+        .with_context(|| format!("Failed to open input file '{}'", input_file))?
+        .with_guessed_format()
+        .context("Could not guess image format")?;
+
 
     // decode input image and convert it to RGBA
-    let img = reader.decode()?;
+    let img = reader.decode().context("Failed to decode image")?;
     let mut img = img.to_rgba8();
 
     println!("Image dimension : {:?}", img.dimensions());
@@ -35,6 +32,8 @@ fn main() -> Result<(), image::ImageError> {
     }
 
     // save resulting image
-    img.save(output_file)?;
+    img.save(output_file)
+        .with_context(|| format!("Failed to save output file '{}'", output_file))?;
+
     Ok(())
 }
