@@ -608,6 +608,7 @@ dependencies = [
 name = "princeps_mathematicarum_imaginum"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "image",
 ]
 

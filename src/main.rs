@@ -1,4 +1,5 @@
 use std::env;
+use std::io::ErrorKind;
 use image::ImageReader;
 use image::Pixel;
 
@@ -11,8 +12,19 @@ fn main() -> Result<(), image::ImageError> {
     // get path to the resulting image to produce
     let output_file = &args[2];
 
-    // open input image and convert it to RGBA
-    let img = ImageReader::open(input_file)?.decode()?;
+    // try to open input image
+    let reader = ImageReader::open(input_file).unwrap_or_else(|error| {
+        if error.kind() == ErrorKind::NotFound {
+            panic!("Given input image not found !");
+        }
+        else {
+            panic!("Cannot read given input image !");
+        }
+    })
+    .with_guessed_format()?;
+
+    // decode input image and convert it to RGBA
+    let img = reader.decode()?;
     let mut img = img.to_rgba8();
 
     println!("Image dimension : {:?}", img.dimensions());
