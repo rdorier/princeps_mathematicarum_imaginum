@@ -1,17 +1,128 @@
 use std::env;
-use image::ImageReader;
-use image::Pixel;
-use anyhow::{Context, Result};
+use image::{RgbaImage, ImageReader, Pixel, Rgba};
+use anyhow::{anyhow, Context, Result};
+use ndarray::{array, Array2};
+
+
+fn rgba_to_gray_array_conversion(img: &RgbaImage) -> Array2<f32> {
+    // transform image as grayscale using coef from UIT-R BT.601-7 norm to mimic human perception
+
+    // RGB coef from BT.601-7 norm
+    let green_sensibility_coef = 0.299;
+    let red_sensibility_coef = 0.587;
+    let blue_sensibility_coef = 0.114;
+
+    let (width, height) = img.dimensions();
+    let mut gray_img = Array2::<f32>::zeros((height as usize, width as usize));
+
+    for (x, y, pixel) in img.enumerate_pixels() {
+        let [r, g, b, _a] = pixel.0;
+        let gray_value = green_sensibility_coef * (r as f32)
+              + red_sensibility_coef * (g as f32)
+              + blue_sensibility_coef * (b as f32);
+        gray_img[[y as usize, x as usize]] = gray_value;
+    }
+
+    gray_img
+}
+
+fn gray_array_to_rgba_conversion(gray_array: &Array2<f32>) -> RgbaImage {
+    // convert gray array representing pixels intensity as a RGBA image (in grayscale)
+
+    // get array dimensions
+    let (height, width) = gray_array.dim();
+    // create an image with same height and widht than gray array
+    let mut rgba_img = RgbaImage::new(width as u32, height as u32);
+
+    for y in 0..height {
+        for x in 0..width {
+            // get intensity value and transfer it equally between red, blue and green channel
+            let intensity = gray_array[[y, x]].clamp(0.0, 255.0) as u8;
+            rgba_img.put_pixel(x as u32, y as u32, Rgba([intensity, intensity, intensity, 255]));
+        }
+    }
+
+    rgba_img
+}
+
+
+
+fn inverse(mut img : RgbaImage ) -> RgbaImage  {
+    // Invert pixels value of the input image.
+    for pixel in img.pixels_mut(){
+        pixel.invert();
+    }
+
+    img
+}
+
+fn sobel_filter(img : RgbaImage ) -> RgbaImage  {
+    // Detect edges using Sobel algorithm.
+
+    // sobel kernel to use to find intensity peaks in image : the intensity peaks represent edges
+    // this kernel highlight vertical edges
+    let sobel_x_matrix = array![
+        [-1., 0., 1.],
+        [-2., 0., 2.],
+        [-1., 0., 1.],
+    ];
+    // this kernel highlight horizontal edges
+    let sobel_y_matrix = array![
+        [-1., -2., -1.],
+        [ 0.,  0.,  0.],
+        [ 1.,  2.,  1.],
+    ];
+    
+    // convert image as intensity array (grayscale value)
+    let img_as_gray_array = rgba_to_gray_array_conversion(&img);
+    let (height, width) = img_as_gray_array.dim();
+
+    let mut edges_array = Array2::<f32>::zeros((height, width));
+    
+    // convolve intensity array with kernel
+    for i in 1..((height - 1) as i32){
+        for j in 1..((width - 1) as i32) {
+            let mut sumx = 0.0;
+            let mut sumy = 0.0;
+
+            for p in -1i32..=1 {
+                for q in -1i32..=1 {
+                    let y : usize = (i + p).try_into().unwrap();
+                    let x : usize = (j + q).try_into().unwrap();
+                    
+                    let kernel_x : usize = (p + 1).try_into().unwrap();
+                    let kernel_y : usize = (q + 1).try_into().unwrap();
+
+                    sumx = sumx + (img_as_gray_array[[y,x]] * sobel_x_matrix[[kernel_x, kernel_y]]);
+                    sumy = sumy + (img_as_gray_array[[y,x]] * sobel_y_matrix[[kernel_x, kernel_y]]);
+                }
+            }
+            edges_array[[i as usize, j as usize]] = ((sumx * sumx) + (sumy * sumy)).sqrt();
+        }
+    }
+    
+    // convert array into a grayscale image
+    let edges_image = gray_array_to_rgba_conversion(&edges_array);
+
+    edges_image
+}
 
 
 fn main() -> Result<()> {
     // collect arguments pass to the tool using CLI
     let args: Vec<String> = env::args().collect();
 
+    // check parameters number
+    if args.len() < 4 {
+        return Err(anyhow!("Not enough arguments given to the CLI. You must at least specify an input image, an output location and an operation to perform."));
+    }
+
     // get path of image to treat
     let input_file = &args[1];
     // get path to the resulting image to produce
     let output_file = &args[2];
+
+    let operation = &args[3];
 
     // try to open input image
     let reader = ImageReader::open(input_file)
@@ -26,14 +137,18 @@ fn main() -> Result<()> {
 
     println!("Image dimension : {:?}", img.dimensions());
 
-    // invert pixels value of the input image
-    for pixel in img.pixels_mut(){
-        pixel.invert();
+    match operation.as_str() {
+        "-inverse" => img = inverse(img),
+        "-filter" => img = sobel_filter(img),
+        _ => {println!("Unknown requested operation : {operation}"),
     }
+
+    // TODO exit if invalid operation requested
 
     // save resulting image
     img.save(output_file)
         .with_context(|| format!("Failed to save output file '{}'", output_file))?;
+    println!("Resulting image saved at location : {output_file}");
 
     Ok(())
 }
