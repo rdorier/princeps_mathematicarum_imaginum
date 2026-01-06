@@ -60,12 +60,13 @@ fn sobel_filter(img : RgbaImage ) -> RgbaImage  {
     // Detect edges using Sobel algorithm.
 
     // sobel kernel to use to find intensity peaks in image : the intensity peaks represent edges
+    // this kernel highlight vertical edges
     let sobel_x_matrix = array![
         [-1., 0., 1.],
         [-2., 0., 2.],
         [-1., 0., 1.],
     ];
-
+    // this kernel highlight horizontal edges
     let sobel_y_matrix = array![
         [-1., -2., -1.],
         [ 0.,  0.,  0.],
@@ -84,8 +85,8 @@ fn sobel_filter(img : RgbaImage ) -> RgbaImage  {
             let mut sumx = 0.0;
             let mut sumy = 0.0;
 
-            for p in -1i32..1 {
-                for q in -1i32..1 {
+            for p in -1i32..=1 {
+                for q in -1i32..=1 {
                     let x : usize = (i + p).try_into().unwrap();
                     let y : usize = (j + q).try_into().unwrap();
                     
@@ -96,7 +97,7 @@ fn sobel_filter(img : RgbaImage ) -> RgbaImage  {
                     sumy = sumy + (img_as_gray_array[[x,y]] * sobel_y_matrix[[kernel_x, kernel_y]]);
                 }
             }
-            edges_array[[i as usize, j as usize]] = (sumx * sumx + sumy * sumy).sqrt();
+            edges_array[[i as usize, j as usize]] = ((sumx * sumx) + (sumy * sumy)).sqrt();
         }
     }
     
