@@ -112,7 +112,7 @@ fn main() -> Result<()> {
     // collect arguments pass to the tool using CLI
     let args: Vec<String> = env::args().collect();
 
-    // TODO : check parameters number
+    // check parameters number
     if args.len() < 4 {
         return Err(anyhow!("Not enough arguments given to the CLI. You must at least specify an input image, an output location and an operation to perform."));
     }
@@ -140,7 +140,7 @@ fn main() -> Result<()> {
     match operation.as_str() {
         "-inverse" => img = inverse(img),
         "-filter" => img = sobel_filter(img),
-        _ => println!("Unknown requested operation : {operation}"),
+        _ => {println!("Unknown requested operation : {operation}"),
     }
 
     // TODO exit if invalid operation requested
