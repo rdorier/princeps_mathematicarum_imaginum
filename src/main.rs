@@ -1,6 +1,6 @@
 use std::env;
 use image::{RgbaImage, ImageReader, Pixel, Rgba};
-use anyhow::{Context, Result};
+use anyhow::{anyhow, Context, Result};
 use ndarray::{array, Array2};
 
 
@@ -113,6 +113,9 @@ fn main() -> Result<()> {
     let args: Vec<String> = env::args().collect();
 
     // TODO : check parameters number
+    if args.len() < 4 {
+        return Err(anyhow!("Not enough arguments given to the CLI. You must at least specify an input image, an output location and an operation to perform."));
+    }
 
     // get path of image to treat
     let input_file = &args[1];

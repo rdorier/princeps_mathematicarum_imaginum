@@ -7,7 +7,7 @@ The project name is a reference to Carl Friedrich Gauss, considered as the Princ
 
 The tool works as a CLI. You must pass two arguments : the first being the path to the input image you want to treat, and the second one, the path to the resulting image.
 
-## Edge Detection using Sobel Filter
+## Edges Detection using Sobel Filter
 
 DOC to do
 
