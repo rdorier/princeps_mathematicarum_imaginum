@@ -1,6 +1,43 @@
 use std::env;
-use image::{RgbaImage, ImageReader, Pixel};
+use image::{RgbaImage, ImageReader, Pixel, Rgba};
 use anyhow::{Context, Result};
+use ndarray::{array, Array2};
+
+
+fn rgba_to_gray_array_conversion(img: &RgbaImage) -> Array2<f32> {
+    // transform image as grayscale using coef from UIT-R BT.601-7 norm to mimic human perception
+    let green_sensibility_coef = 0.299;
+    let red_sensibility_coef = 0.587;
+    let blue_sensibility_coef = 0.114;
+
+    let (width, height) = img.dimensions();
+    let mut gray_img = Array2::<f32>::zeros((height as usize, width as usize));
+
+    for (x, y, pixel) in img.enumerate_pixels() {
+        let [r, g, b, _a] = pixel.0;
+        let gray_value = green_sensibility_coef * (r as f32)
+              + red_sensibility_coef * (g as f32)
+              + blue_sensibility_coef * (b as f32);
+        gray_img[[y as usize, x as usize]] = gray_value;
+    }
+
+    gray_img
+}
+
+fn gray_array_to_rgba(mag: &Array2<f32>) -> RgbaImage {
+    let (h, w) = mag.dim();
+    let mut img = RgbaImage::new(w as u32, h as u32);
+
+    for y in 0..h {
+        for x in 0..w {
+            let v = mag[[y, x]].clamp(0.0, 255.0) as u8;
+            img.put_pixel(x as u32, y as u32, Rgba([v, v, v, 255]));
+        }
+    }
+
+    img
+}
+
 
 
 fn inverse(mut img : RgbaImage ) -> RgbaImage  {
@@ -12,10 +49,31 @@ fn inverse(mut img : RgbaImage ) -> RgbaImage  {
     img
 }
 
-fn sobel_filter(mut img : RgbaImage ) -> RgbaImage  {
+fn sobel_filter(img : RgbaImage ) -> RgbaImage  {
     // Detect edges using Sobel algorithm.
     println!("FILTER !");
-    img
+
+    //let mut test = img.clone();
+
+    let sobel_x_matrix = array![
+        [-1., 0., 1.],
+        [-2., 0., 2.],
+        [-1., 0., 1.],
+    ];
+
+    let sobel_y_matrix = array![
+        [-1., -2., -1.],
+        [ 0.,  0.,  0.],
+        [ 1.,  2.,  1.],
+    ];
+    println!("{}", sobel_y_matrix[[0,1]]);
+
+    let test = rgba_to_gray_array_conversion(&img);
+    let test = gray_array_to_rgba(&test);
+
+
+    println!("{}", sobel_x_matrix);
+    test
 }
 
 
@@ -50,6 +108,8 @@ fn main() -> Result<()> {
         "-filter" => img = sobel_filter(img),
         _ => println!("Unknown requested operation : {operation}"),
     }
+
+    // TODO exit if invalid operation requested
 
     // save resulting image
     img.save(output_file)
