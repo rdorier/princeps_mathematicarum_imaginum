@@ -87,14 +87,14 @@ fn sobel_filter(img : RgbaImage ) -> RgbaImage  {
 
             for p in -1i32..=1 {
                 for q in -1i32..=1 {
-                    let x : usize = (i + p).try_into().unwrap();
-                    let y : usize = (j + q).try_into().unwrap();
+                    let y : usize = (i + p).try_into().unwrap();
+                    let x : usize = (j + q).try_into().unwrap();
                     
                     let kernel_x : usize = (p + 1).try_into().unwrap();
                     let kernel_y : usize = (q + 1).try_into().unwrap();
 
-                    sumx = sumx + (img_as_gray_array[[x,y]] * sobel_x_matrix[[kernel_x, kernel_y]]);
-                    sumy = sumy + (img_as_gray_array[[x,y]] * sobel_y_matrix[[kernel_x, kernel_y]]);
+                    sumx = sumx + (img_as_gray_array[[y,x]] * sobel_x_matrix[[kernel_x, kernel_y]]);
+                    sumy = sumy + (img_as_gray_array[[y,x]] * sobel_y_matrix[[kernel_x, kernel_y]]);
                 }
             }
             edges_array[[i as usize, j as usize]] = ((sumx * sumx) + (sumy * sumy)).sqrt();
