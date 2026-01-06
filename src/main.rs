@@ -1,14 +1,10 @@
 use std::env;
-use image::RgbaImage;
-use image::ImageReader;
-use image::Pixel;
+use image::{RgbaImage, ImageReader, Pixel};
 use anyhow::{Context, Result};
 
 
 fn inverse(mut img : RgbaImage ) -> RgbaImage  {
-    println!("INVERSE !");
-
-    // invert pixels value of the input image
+    // Invert pixels value of the input image.
     for pixel in img.pixels_mut(){
         pixel.invert();
     }
@@ -17,6 +13,7 @@ fn inverse(mut img : RgbaImage ) -> RgbaImage  {
 }
 
 fn sobel_filter(mut img : RgbaImage ) -> RgbaImage  {
+    // Detect edges using Sobel algorithm.
     println!("FILTER !");
     img
 }
