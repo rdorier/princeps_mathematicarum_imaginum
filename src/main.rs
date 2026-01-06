@@ -6,6 +6,8 @@ use ndarray::{array, Array2};
 
 fn rgba_to_gray_array_conversion(img: &RgbaImage) -> Array2<f32> {
     // transform image as grayscale using coef from UIT-R BT.601-7 norm to mimic human perception
+
+    // RGB coef from BT.601-7 norm
     let green_sensibility_coef = 0.299;
     let red_sensibility_coef = 0.587;
     let blue_sensibility_coef = 0.114;
@@ -24,18 +26,23 @@ fn rgba_to_gray_array_conversion(img: &RgbaImage) -> Array2<f32> {
     gray_img
 }
 
-fn gray_array_to_rgba(mag: &Array2<f32>) -> RgbaImage {
-    let (h, w) = mag.dim();
-    let mut img = RgbaImage::new(w as u32, h as u32);
+fn gray_array_to_rgba_conversion(gray_array: &Array2<f32>) -> RgbaImage {
+    // convert gray array representing pixels intensity as a RGBA image (in grayscale)
 
-    for y in 0..h {
-        for x in 0..w {
-            let v = mag[[y, x]].clamp(0.0, 255.0) as u8;
-            img.put_pixel(x as u32, y as u32, Rgba([v, v, v, 255]));
+    // get array dimensions
+    let (height, width) = gray_array.dim();
+    // create an image with same height and widht than gray array
+    let mut rgba_img = RgbaImage::new(width as u32, height as u32);
+
+    for y in 0..height {
+        for x in 0..width {
+            // get intensity value and transfer it equally between red, blue and green channel
+            let intensity = gray_array[[y, x]].clamp(0.0, 255.0) as u8;
+            rgba_img.put_pixel(x as u32, y as u32, Rgba([intensity, intensity, intensity, 255]));
         }
     }
 
-    img
+    rgba_img
 }
 
 
@@ -69,7 +76,7 @@ fn sobel_filter(img : RgbaImage ) -> RgbaImage  {
     println!("{}", sobel_y_matrix[[0,1]]);
 
     let test = rgba_to_gray_array_conversion(&img);
-    let test = gray_array_to_rgba(&test);
+    let test = gray_array_to_rgba_conversion(&test);
 
 
     println!("{}", sobel_x_matrix);
