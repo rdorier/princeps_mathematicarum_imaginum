@@ -58,10 +58,8 @@ fn inverse(mut img : RgbaImage ) -> RgbaImage  {
 
 fn sobel_filter(img : RgbaImage ) -> RgbaImage  {
     // Detect edges using Sobel algorithm.
-    println!("FILTER !");
 
-    //let mut test = img.clone();
-
+    // sobel kernel to use to find intensity peaks in image : the intensity peaks represent edges
     let sobel_x_matrix = array![
         [-1., 0., 1.],
         [-2., 0., 2.],
@@ -73,14 +71,39 @@ fn sobel_filter(img : RgbaImage ) -> RgbaImage  {
         [ 0.,  0.,  0.],
         [ 1.,  2.,  1.],
     ];
-    println!("{}", sobel_y_matrix[[0,1]]);
+    
+    // convert image as intensity array (grayscale value)
+    let img_as_gray_array = rgba_to_gray_array_conversion(&img);
+    let (height, width) = img_as_gray_array.dim();
 
-    let test = rgba_to_gray_array_conversion(&img);
-    let test = gray_array_to_rgba_conversion(&test);
+    let mut edges_array = Array2::<f32>::zeros((height, width));
+    
+    // convolve intensity array with kernel
+    for i in 1..((height - 1) as i32){
+        for j in 1..((width - 1) as i32) {
+            let mut sumx = 0.0;
+            let mut sumy = 0.0;
 
+            for p in -1i32..1 {
+                for q in -1i32..1 {
+                    let x : usize = (i + p).try_into().unwrap();
+                    let y : usize = (j + q).try_into().unwrap();
+                    
+                    let kernel_x : usize = (p + 1).try_into().unwrap();
+                    let kernel_y : usize = (q + 1).try_into().unwrap();
 
-    println!("{}", sobel_x_matrix);
-    test
+                    sumx = sumx + (img_as_gray_array[[x,y]] * sobel_x_matrix[[kernel_x, kernel_y]]);
+                    sumy = sumy + (img_as_gray_array[[x,y]] * sobel_y_matrix[[kernel_x, kernel_y]]);
+                }
+            }
+            edges_array[[i as usize, j as usize]] = (sumx * sumx + sumy * sumy).sqrt();
+        }
+    }
+    
+    // convert array into a grayscale image
+    let edges_image = gray_array_to_rgba_conversion(&edges_array);
+
+    edges_image
 }
 
 
