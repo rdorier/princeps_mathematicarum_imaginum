@@ -57,6 +57,7 @@ fn main() -> Result<()> {
     // save resulting image
     img.save(output_file)
         .with_context(|| format!("Failed to save output file '{}'", output_file))?;
+    println!("Resulting image saved at location : {output_file}");
 
     Ok(())
 }
