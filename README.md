@@ -5,7 +5,8 @@ The project name is a reference to Carl Friedrich Gauss, considered as the Princ
 
 ## Command-Line Interface usage
 
-The tool works as a CLI. You must pass two arguments : the first being the path to the input image you want to treat, and the second one, the path to the resulting image.
+The tool works as a CLI. You must pass three arguments : the first being the path to the input image you want to treat, the second one, the path to the resulting image, and the last one the operation to perform.  
+The last argument must be "-inverse" to perform a color inversion, or "-filter" to perform a Sobel filter.  
 
 ## Edges Detection using Sobel Filter
 
@@ -17,7 +18,7 @@ Example of an input image
 Resulting edge detection using Sobel Filter  
 
 ## Goals :
-1. Done : Basic pixels manipulation with `image` create(read an image, and apply a simple transformation like color inversion)
+1. Done : Basic pixels manipulation with `image` crate(read an image, and apply a simple transformation like color inversion)
 2. Done : Implement a convolution filter (like Sobel one for edges detection)
 3. TODO : Implement several filters (GaussianBlur, EdgeDetection, Sharpen) using POO
 4. TODO : use `rayon` for parallel treatments and have quicker filters
