@@ -7,6 +7,13 @@ mod image_transforms;
 pub use crate::image_transforms::*;
 
 
+#[derive(PartialEq)]
+enum CLICommandValidity {
+    ValidCommand,
+    InvalidCommand
+}
+
+
 fn sobel_filter(img : RgbaImage ) -> RgbaImage  {
     // Detect edges using Sobel algorithm.
 
@@ -60,6 +67,9 @@ fn sobel_filter(img : RgbaImage ) -> RgbaImage  {
 
 
 fn main() -> Result<()> {
+    // check if CLI command enter by user is valid
+    let mut command_validity = CLICommandValidity::ValidCommand;
+
     // collect arguments pass to the tool using CLI
     let args: Vec<String> = env::args().collect();
 
@@ -91,15 +101,22 @@ fn main() -> Result<()> {
     match operation.as_str() {
         "-inverse" => img = inverse(img),
         "-filter" => img = sobel_filter(img),
-        _ => println!("Unknown requested operation : {operation}"),
+        _ => {
+            println!("Unknown requested operation : {operation}");
+            command_validity = CLICommandValidity::InvalidCommand
+        },
     }
 
-    // TODO exit if invalid operation requested
-
-    // save resulting image
-    img.save(output_file)
-        .with_context(|| format!("Failed to save output file '{}'", output_file))?;
-    println!("Resulting image saved at location : {output_file}");
+    if command_validity == CLICommandValidity::ValidCommand {
+        // save resulting image
+        img.save(output_file)
+            .with_context(|| format!("Failed to save output file '{}'", output_file))?;
+        println!("Resulting image saved at location : {output_file}");
+    }
+    else {
+        // exit if invalid operation requested
+        println!("Invalid operation requested ! Nothing to do here !")
+    }
 
     Ok(())
 }
