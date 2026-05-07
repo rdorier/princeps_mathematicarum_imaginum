@@ -13,6 +13,7 @@ enum CLICommandValidity {
 }
 
 fn sobel_filter(img: RgbaImage) -> RgbaImage {
+    println!("SOBEL !!!");
     // Detect edges using Sobel algorithm.
 
     // sobel kernel to use to find intensity peaks in image : the intensity peaks represent edges
@@ -42,7 +43,7 @@ fn sobel_filter(img: RgbaImage) -> RgbaImage {
                     let kernel_y: usize = (q + 1).try_into().unwrap();
 
                     sumx += img_as_gray_array[[y, x]] * sobel_x_matrix[[kernel_x, kernel_y]];
-                    sumy += (img_as_gray_array[[y, x]] * sobel_y_matrix[[kernel_x, kernel_y]]);
+                    sumy += img_as_gray_array[[y, x]] * sobel_y_matrix[[kernel_x, kernel_y]];
                 }
             }
             edges_array[[i as usize, j as usize]] = ((sumx * sumx) + (sumy * sumy)).sqrt();
@@ -51,6 +52,41 @@ fn sobel_filter(img: RgbaImage) -> RgbaImage {
 
     // convert array into a grayscale image
     gray_array_to_rgba_conversion(&edges_array)
+}
+
+fn gaussian_blur(img: RgbaImage) -> RgbaImage {
+    println!("GAUSSIAN !!!");
+    // TODO : add blur radius parameter to change size of kernel
+    // default gaussian kernel used to blur image
+    let gaussian_kernel = array![[1., 2., 1.], [2., 4., 2.], [1., 2., 1.]];
+
+    // TODO : work on RGB images
+    // convert image as intensity array (grayscale value)
+    let img_as_gray_array = rgba_to_gray_array_conversion(&img);
+
+    let (height, width) = img_as_gray_array.dim();
+
+    let mut blurred_image = Array2::<f32>::zeros((height, width));
+
+    for x in 1..(height - 1) {
+        for y in 1..(width - 1) {
+            let pixel_value = (4. * img_as_gray_array[[x, y]]
+                + 2. * img_as_gray_array[[x, y + 1]]
+                + 2. * img_as_gray_array[[x, y - 1]]
+                + 2. * img_as_gray_array[[x + 1, y]]
+                + 2. * img_as_gray_array[[x - 1, y]]
+                + 1. * img_as_gray_array[[x - 1, y - 1]]
+                + 1. * img_as_gray_array[[x + 1, y - 1]]
+                + 1. * img_as_gray_array[[x - 1, y + 1]]
+                + 1. * img_as_gray_array[[x + 1, y + 1]])
+                / 16.;
+
+            blurred_image[[x, y]] = pixel_value;
+        }
+    }
+
+    // convert array into a grayscale image
+    gray_array_to_rgba_conversion(&blurred_image)
 }
 
 fn main() -> Result<()> {
@@ -88,7 +124,17 @@ fn main() -> Result<()> {
 
     match operation.as_str() {
         "-inverse" => img = inverse(img),
-        "-filter" => img = sobel_filter(img),
+        "-filter" => {
+            let sobel_filter_param = &String::from("sobel");
+            let gaussian_filter_param = &String::from("gaussian");
+            if args.len() >= 5 {
+                img = match &args[4].as_str() {
+                    sobel_filter_param => sobel_filter(img),
+                    aussian_filter_param => gaussian_blur(img),
+                    _ => img,
+                }
+            }
+        }
         _ => {
             println!("Unknown requested operation : {operation}");
             command_validity = CLICommandValidity::InvalidCommand
