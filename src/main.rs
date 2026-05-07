@@ -13,7 +13,6 @@ enum CLICommandValidity {
 }
 
 fn sobel_filter(img: RgbaImage) -> RgbaImage {
-    println!("SOBEL !!!");
     // Detect edges using Sobel algorithm.
 
     // sobel kernel to use to find intensity peaks in image : the intensity peaks represent edges
@@ -55,8 +54,8 @@ fn sobel_filter(img: RgbaImage) -> RgbaImage {
 }
 
 fn gaussian_blur(img: RgbaImage) -> RgbaImage {
-    println!("GAUSSIAN !!!");
     // TODO : add blur radius parameter to change size of kernel
+    // TODO : use kernel
     // default gaussian kernel used to blur image
     let gaussian_kernel = array![[1., 2., 1.], [2., 4., 2.], [1., 2., 1.]];
 
@@ -125,13 +124,16 @@ fn main() -> Result<()> {
     match operation.as_str() {
         "-inverse" => img = inverse(img),
         "-filter" => {
-            let sobel_filter_param = &String::from("sobel");
-            let gaussian_filter_param = &String::from("gaussian");
             if args.len() >= 5 {
-                img = match &args[4].as_str() {
-                    sobel_filter_param => sobel_filter(img),
-                    aussian_filter_param => gaussian_blur(img),
-                    _ => img,
+                let filter_type = args[4].clone();
+                img = match filter_type.as_str() {
+                    "sobel" => sobel_filter(img),
+                    "gaussian" => gaussian_blur(img),
+                    _ => {
+                        println!("Unknown filter name : {filter_type}");
+                        command_validity = CLICommandValidity::InvalidCommand;
+                        img
+                    }
                 }
             }
         }
