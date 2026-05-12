@@ -1,7 +1,7 @@
 use anyhow::{Context, Result, anyhow};
 use image::{ImageReader, RgbaImage};
 use ndarray::{Array2, array};
-use std::env;
+use std::{env, f64::consts::PI};
 
 mod image_transforms;
 pub use crate::image_transforms::*;
@@ -53,11 +53,34 @@ fn sobel_filter(img: RgbaImage) -> RgbaImage {
     gray_array_to_rgba_conversion(&edges_array)
 }
 
-fn gaussian_blur(img: RgbaImage) -> RgbaImage {
-    // TODO : add blur radius parameter to change size of kernel
-    // TODO : use kernel
-    // default gaussian kernel used to blur image
-    let gaussian_kernel = array![[1., 2., 1.], [2., 4., 2.], [1., 2., 1.]];
+/// Apply gaussian blur to given image.
+///
+/// # Arguments
+/// * `img` - The image to blur.
+/// * `sigma` - The standard deviation controlling the blur spread. Must be > 0.
+fn gaussian_blur(img: RgbaImage, sigma: f64) -> RgbaImage {
+    if sigma < 0.0 {
+        panic!("Sigma value must be greater than 0"); // TODO : better error management
+    }
+
+    let mut kernel_size = ((6.0 * sigma).ceil() as usize).max(3);
+    if kernel_size % 2 == 0 {
+        kernel_size += 1
+    };
+
+    // TODO : use separability property of the gaussian function to apply two 1-dimensional (one on rows, the other one on columns)
+
+    // row major matrix representing gaussian kernel to apply to pixels : first index represents the row, second one the columns
+    let mut gaussian_kernel = vec![vec![0.0; kernel_size]; kernel_size];
+
+    for y in 0..kernel_size {
+        for x in 0..kernel_size {
+            gaussian_kernel[y][x] = (1.0 / (2.0 * PI * sigma * sigma))
+                * (-((x * x + y * y) as f64) / (2.0 * sigma * sigma)).exp();
+        }
+    }
+
+    // 2D Gaussian function: G(x, y) = (1 / (2 * pi * sigma^2)) * exp(-(x^2 + y^2) / (2 * sigma^2))
 
     // TODO : work on RGB images
     // convert image as intensity array (grayscale value)
@@ -67,20 +90,32 @@ fn gaussian_blur(img: RgbaImage) -> RgbaImage {
 
     let mut blurred_image = Array2::<f32>::zeros((height, width));
 
-    for x in 1..(height - 1) {
-        for y in 1..(width - 1) {
-            let pixel_value = (4. * img_as_gray_array[[x, y]]
-                + 2. * img_as_gray_array[[x, y + 1]]
-                + 2. * img_as_gray_array[[x, y - 1]]
-                + 2. * img_as_gray_array[[x + 1, y]]
-                + 2. * img_as_gray_array[[x - 1, y]]
-                + 1. * img_as_gray_array[[x - 1, y - 1]]
-                + 1. * img_as_gray_array[[x + 1, y - 1]]
-                + 1. * img_as_gray_array[[x - 1, y + 1]]
-                + 1. * img_as_gray_array[[x + 1, y + 1]])
-                / 16.;
+    for y in 1..height {
+        for x in 1..width {
+            let half_kernel_size = kernel_size / 2; // use to center kernel on pixel
+            let mut gaussian_sum: f64 = 0.0;
 
-            blurred_image[[x, y]] = pixel_value;
+            for ky in 0..kernel_size {
+                for kx in 0..kernel_size {
+                    // calculate coordinates of current neighbour pixel (shifted by hald kernel size to center align Kernel with current pixel calculated (x,y))
+                    let neighbour_x = (x as i128) + (kx as i128) - (half_kernel_size as i128);
+                    let neighbour_y = (y as i128) + (ky as i128) - (half_kernel_size as i128);
+
+                    if neighbour_x >= 0
+                        && neighbour_x < width as i128
+                        && neighbour_y >= 0
+                        && neighbour_y < height as i128
+                    {
+                        let weight = gaussian_kernel[ky][kx];
+                        gaussian_sum += (img_as_gray_array
+                            [[neighbour_y as usize, neighbour_x as usize]]
+                            as f64)
+                            * weight;
+                    }
+                }
+            }
+
+            blurred_image[[y, x]] = gaussian_sum as f32;
         }
     }
 
@@ -128,7 +163,7 @@ fn main() -> Result<()> {
                 let filter_type = args[4].clone();
                 img = match filter_type.as_str() {
                     "sobel" => sobel_filter(img),
-                    "gaussian" => gaussian_blur(img),
+                    "gaussian" => gaussian_blur(img, 10.),
                     _ => {
                         println!("Unknown filter name : {filter_type}");
                         command_validity = CLICommandValidity::InvalidCommand;
@@ -153,5 +188,6 @@ fn main() -> Result<()> {
         println!("Invalid operation requested ! Nothing to do here !")
     }
 
+    // TODO : improve error and result handling
     Ok(())
 }
