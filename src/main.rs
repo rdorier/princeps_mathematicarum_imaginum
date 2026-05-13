@@ -1,5 +1,5 @@
 use anyhow::{Context, Result, anyhow};
-use image::{ImageReader, RgbaImage};
+use image::{ImageReader, Pixel, Rgba, RgbaImage};
 use ndarray::{Array2, array};
 use std::{env, f64::consts::PI};
 
@@ -64,7 +64,7 @@ fn gaussian_blur(img: RgbaImage, sigma: f64) -> RgbaImage {
     }
 
     let mut kernel_size = ((6.0 * sigma).ceil() as usize).max(3);
-    if kernel_size % 2 == 0 {
+    if kernel_size.is_multiple_of(2) {
         kernel_size += 1
     };
 
@@ -75,52 +75,65 @@ fn gaussian_blur(img: RgbaImage, sigma: f64) -> RgbaImage {
 
     for y in 0..kernel_size {
         for x in 0..kernel_size {
+            // 2D Gaussian function: G(x, y) = (1 / (2 * pi * sigma^2)) * exp(-(x^2 + y^2) / (2 * sigma^2))
             gaussian_kernel[y][x] = (1.0 / (2.0 * PI * sigma * sigma))
                 * (-((x * x + y * y) as f64) / (2.0 * sigma * sigma)).exp();
         }
     }
 
-    // 2D Gaussian function: G(x, y) = (1 / (2 * pi * sigma^2)) * exp(-(x^2 + y^2) / (2 * sigma^2))
+    let (width, height) = img.dimensions();
 
-    // TODO : work on RGB images
-    // convert image as intensity array (grayscale value)
-    let img_as_gray_array = rgba_to_gray_array_conversion(&img);
-
-    let (height, width) = img_as_gray_array.dim();
-
-    let mut blurred_image = Array2::<f32>::zeros((height, width));
+    let mut blurred_image = RgbaImage::new(width, height);
 
     for y in 1..height {
         for x in 1..width {
             let half_kernel_size = kernel_size / 2; // use to center kernel on pixel
-            let mut gaussian_sum: f64 = 0.0;
 
-            for ky in 0..kernel_size {
-                for kx in 0..kernel_size {
-                    // calculate coordinates of current neighbour pixel (shifted by hald kernel size to center align Kernel with current pixel calculated (x,y))
-                    let neighbour_x = (x as i128) + (kx as i128) - (half_kernel_size as i128);
-                    let neighbour_y = (y as i128) + (ky as i128) - (half_kernel_size as i128);
+            let mut blurred_pixel: Rgba<u8> = Rgba([0; 4]);
 
-                    if neighbour_x >= 0
-                        && neighbour_x < width as i128
-                        && neighbour_y >= 0
-                        && neighbour_y < height as i128
-                    {
-                        let weight = gaussian_kernel[ky][kx];
-                        gaussian_sum += (img_as_gray_array
-                            [[neighbour_y as usize, neighbour_x as usize]]
-                            as f64)
-                            * weight;
+            for channel_index in 0..4 {
+                let mut gaussian_sum: f64 = 0.0;
+                let mut accumulated_weight = 0.0;
+
+                for ky in 0..kernel_size {
+                    for kx in 0..kernel_size {
+                        // calculate coordinates of current neighbour pixel (shifted by hald kernel size to center align Kernel with current pixel calculated (x,y))
+                        let neighbour_x = (x as i128) + (kx as i128) - (half_kernel_size as i128);
+                        let neighbour_y = (y as i128) + (ky as i128) - (half_kernel_size as i128);
+
+                        if neighbour_x >= 0
+                            && neighbour_x < width as i128
+                            && neighbour_y >= 0
+                            && neighbour_y < height as i128
+                        {
+                            let weight = gaussian_kernel[ky][kx];
+
+                            gaussian_sum += (img
+                                .get_pixel_checked(neighbour_x as u32, neighbour_y as u32)
+                                .unwrap()
+                                .channels()[channel_index]
+                                as f64)
+                                * weight;
+                            accumulated_weight += weight;
+                        }
                     }
                 }
+
+                // normalize weight to avoid having adrker or brighter image
+                let normalized_gaussian_value = if accumulated_weight > 0.0 {
+                    gaussian_sum / accumulated_weight
+                } else {
+                    0.0
+                };
+                blurred_pixel[channel_index] = normalized_gaussian_value as u8;
             }
 
-            blurred_image[[y, x]] = gaussian_sum as f32;
+            blurred_image[(x, y)] = blurred_pixel;
         }
     }
 
     // convert array into a grayscale image
-    gray_array_to_rgba_conversion(&blurred_image)
+    blurred_image
 }
 
 fn main() -> Result<()> {
@@ -163,7 +176,7 @@ fn main() -> Result<()> {
                 let filter_type = args[4].clone();
                 img = match filter_type.as_str() {
                     "sobel" => sobel_filter(img),
-                    "gaussian" => gaussian_blur(img, 10.),
+                    "gaussian" => gaussian_blur(img, 10.5), // TODO : get sigma from parameter
                     _ => {
                         println!("Unknown filter name : {filter_type}");
                         command_validity = CLICommandValidity::InvalidCommand;
