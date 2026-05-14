@@ -27,7 +27,9 @@ This algorithm blurs a given image using the Gaussian function. It takes a sigma
 
 ![Test image as moutains landscape](doc/images/mountain-8487679_1920.jpg)
 Example of an input image  
-![Resulting image with sobel filter](doc/images/gaussian_blur.png)
+![Resulting image with gaussian blur applied with 3.0 as sigma value](doc/images/gaussian_blur_sigma3.png)
+Resulting blurred image with a sigma value of 3.0
+![Resulting image with gaussian blur applied with 10.5 as sigma value](doc/images/gaussian_blur_sigma10.5.png)
 Resulting blurred image with a sigma value of 10.5
 
 ## Goals :
