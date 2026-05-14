@@ -176,7 +176,10 @@ fn main() -> Result<()> {
                 let filter_type = args[4].clone();
                 img = match filter_type.as_str() {
                     "sobel" => sobel_filter(img),
-                    "gaussian" => gaussian_blur(img, 10.5), // TODO : get sigma from parameter
+                    "gaussian_blur" => {
+                        let sigma = if args.len() >= 6 {args[5].parse()?} else {3.0};
+                        gaussian_blur(img, sigma)
+                    },
                     _ => {
                         println!("Unknown filter name : {filter_type}");
                         command_validity = CLICommandValidity::InvalidCommand;
