@@ -10,7 +10,7 @@ The following argument is the operation type to perform :
 - "-inverse" to perform a color inversion
 - "-filter" to apply one of the available filters
 
-## Available fitlers
+## Available filters
 
 ## Edges Detection using Sobel Filter
 
