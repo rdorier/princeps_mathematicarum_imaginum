@@ -1,8 +1,7 @@
 use anyhow::{Context, Result, anyhow};
 use filters::{Filtering, GaussianBlur, SobelFilter};
-use image::{ImageReader, RgbaImage};
+use image::ImageReader;
 use image_processing::inverse;
-use ndarray::{Array2, array};
 use std::{env};
 
 

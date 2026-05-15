@@ -678,7 +678,6 @@ dependencies = [
  "filters",
  "image",
  "image_processing",
- "ndarray",
 ]
 
 [[package]]
