@@ -2,21 +2,21 @@ use std::f64::consts::PI;
 use image::{Pixel, Rgba, RgbaImage};
 use crate::Filtering;
 
-/// Apply gaussian blur to given image.
-///
-/// # Arguments
-/// * `sigma` - The standard deviation controlling the blur spread.
-/// 
-/// # Invariant
-/// - `sigma` value must be > 0
+/// Filter to blur an image using the Gaussian function
 pub struct GaussianBlur {
-    sigma: f64,
     kernel: Vec<Vec<f64>>,
     kernel_size: usize,
 }
 
 
 impl GaussianBlur {
+    /// Create a new gaussian blur filter.
+    /// 
+    /// # Arguments
+    /// * `sigma` - The standard deviation controlling the blur spread.
+    /// 
+    /// # Invariant
+    /// - `sigma` value must be > 0
     pub fn try_new(sigma:f64) -> Self {
         if sigma < 0.0 {
             panic!("Sigma value must be greater than 0"); // TODO : better error management
@@ -26,8 +26,6 @@ impl GaussianBlur {
         if kernel_size.is_multiple_of(2) {
             kernel_size += 1
         };
-
-        // TODO : separate function to compute kernel
 
         // row major matrix representing gaussian kernel to apply to pixels : first index represents the row, second one the columns
         let mut kernel = vec![vec![0.0; kernel_size]; kernel_size];
@@ -41,7 +39,6 @@ impl GaussianBlur {
         }
 
         Self {
-            sigma,
             kernel,
             kernel_size
         }
