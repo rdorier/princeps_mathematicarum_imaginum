@@ -1,8 +1,11 @@
-use anyhow::{Context, Result, anyhow};
+//use anyhow::{Context, Result, anyhow};
 use filters::{Filtering, GaussianBlur, SobelFilter};
 use image::ImageReader;
-use image_processing::inverse;
+use image_processing::{read_image_from_path, inverse};
 use std::{env};
+
+mod errors;
+use errors::*;
 
 
 
@@ -12,7 +15,7 @@ enum CLICommandValidity {
     InvalidCommand,
 }
 
-fn main() -> Result<()> {
+fn main() -> Result<(), Error> {
     // check if CLI command enter by user is valid
     let mut command_validity = CLICommandValidity::ValidCommand;
 
@@ -21,9 +24,7 @@ fn main() -> Result<()> {
 
     // check parameters number
     if args.len() < 4 {
-        return Err(anyhow!(
-            "Not enough arguments given to the CLI. You must at least specify an input image, an output location and an operation to perform."
-        ));
+        return Err(Error::NotEnoughArguments);
     }
 
     // get path of image to treat
@@ -33,15 +34,8 @@ fn main() -> Result<()> {
 
     let operation = &args[3];
 
-    // try to open input image
-    let reader = ImageReader::open(input_file)
-        .with_context(|| format!("Failed to open input file '{}'", input_file))?
-        .with_guessed_format()
-        .context("Could not guess image format")?;
-
-    // decode input image and convert it to RGBA
-    let img = reader.decode().context("Failed to decode image")?;
-    let mut img = img.to_rgba8();
+    let mut img = read_image_from_path(input_file)
+    .map_err(|err| Error::FileReadingError(err))?;
 
     println!("Image dimension : {:?}", img.dimensions());
 
@@ -56,7 +50,11 @@ fn main() -> Result<()> {
                         sobel_filter.filter(img)
                     },
                     "gaussian_blur" => {
-                        let sigma = if args.len() >= 6 {args[5].parse()?} else {3.0};
+                        let sigma = if args.len() >= 6 {
+                            args[5].parse().map_err(|_| Error::NotANumberParameter(args[5].clone()))?
+                        } else {
+                            3.0
+                        };
                         let gaussian_blur_filter = GaussianBlur::try_new(sigma);
                         gaussian_blur_filter.filter(img)
                     },
@@ -77,7 +75,7 @@ fn main() -> Result<()> {
     if command_validity == CLICommandValidity::ValidCommand {
         // save resulting image
         img.save(output_file)
-            .with_context(|| format!("Failed to save output file '{}'", output_file))?;
+            .map_err(|err| Error::SavingImageFailure(err))?;
         println!("Resulting image saved at location : {output_file}");
     } else {
         // exit if invalid operation requested

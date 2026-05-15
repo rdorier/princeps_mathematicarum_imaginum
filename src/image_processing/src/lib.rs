@@ -1,6 +1,21 @@
-use image::{RgbaImage, Rgba, Pixel};
+use image::{ImageReader, Rgba, RgbaImage, Pixel};
 use ndarray::{Array2};
 
+mod error;
+
+pub use error::*;
+
+pub fn read_image_from_path(file_path: &String) -> Result<RgbaImage, Error>{
+    // try to open input image
+    let reader = ImageReader::open(file_path)
+        .map_err(|_| Error::FileOpeningError(file_path.clone()))?
+        .with_guessed_format()
+        .map_err(|_| Error::UnknownFileFormat(file_path.clone()))?;
+
+    // decode input image and convert it to RGBA
+    let img = reader.decode().map_err(|_| Error::FileDecode)?;
+    Ok(img.to_rgba8())
+}
 
 pub fn rgba_to_gray_array_conversion(img: &RgbaImage) -> Array2<f32> {
     // transform image as grayscale using coef from UIT-R BT.601-7 norm to mimic human perception
