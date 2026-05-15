@@ -1,8 +1,10 @@
 use image::RgbaImage;
 
 pub mod gaussian_blur;
+pub mod sobel_filter;
 
 pub use gaussian_blur::*;
+pub use sobel_filter::*;
 
 /// Trait describing fitlers behaviour
 pub trait Filtering {
