@@ -1,13 +1,10 @@
-//use anyhow::{Context, Result, anyhow};
+use anyhow::{Context, Result};
 use filters::{Filtering, GaussianBlur, SobelFilter};
-use image::ImageReader;
-use image_processing::{read_image_from_path, inverse};
-use std::{env};
+use image_processing::{inverse, read_image_from_path};
+use std::env;
 
 mod errors;
 use errors::*;
-
-
 
 #[derive(PartialEq)]
 enum CLICommandValidity {
@@ -35,7 +32,7 @@ fn main() -> Result<(), Error> {
     let operation = &args[3];
 
     let mut img = read_image_from_path(input_file)
-    .map_err(|err| Error::FileReadingError(err))?;
+        .with_context(|| format!("Could not read file `{}`", input_file))?;
 
     println!("Image dimension : {:?}", img.dimensions());
 
@@ -48,17 +45,20 @@ fn main() -> Result<(), Error> {
                     "sobel" => {
                         let sobel_filter = SobelFilter;
                         sobel_filter.filter(img)
-                    },
+                    }
                     "gaussian_blur" => {
                         let sigma = if args.len() >= 6 {
-                            args[5].parse().map_err(|_| Error::NotANumberParameter(args[5].clone()))?
+                            args[5].parse().with_context(|| {
+                                format!("Sigma argument value {} is not a number", args[5])
+                            })?
                         } else {
                             3.0
                         };
                         let gaussian_blur_filter = GaussianBlur::try_new(sigma);
                         gaussian_blur_filter.filter(img)
-                    },
+                    }
                     _ => {
+                        // TODO : return custom error and display message with context instead of enum
                         println!("Unknown filter name : {filter_type}");
                         command_validity = CLICommandValidity::InvalidCommand;
                         img
@@ -75,13 +75,12 @@ fn main() -> Result<(), Error> {
     if command_validity == CLICommandValidity::ValidCommand {
         // save resulting image
         img.save(output_file)
-            .map_err(|err| Error::SavingImageFailure(err))?;
+            .with_context(|| format!("Failed to save output file {output_file}"))?;
         println!("Resulting image saved at location : {output_file}");
     } else {
         // exit if invalid operation requested
         println!("Invalid operation requested ! Nothing to do here !")
     }
 
-    // TODO : improve error and result handling
     Ok(())
 }
