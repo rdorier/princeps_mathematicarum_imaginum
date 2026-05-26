@@ -5,9 +5,9 @@ The project name is a reference to Carl Friedrich Gauss, considered as the Princ
 
 ## Command-Line Interface usage
 
-The tool works as a CLI. You must pass at least three arguments : the first being the path to the input image you want to treat, the second one, the path to the resulting image, and the last one the operation to perform.  
+The tool works as a CLI. It takes several arguments as shown below. Notes that you must pass at least three arguments : the first being the path to the input image you want to treat, the second one, the path to the resulting image, and the last one the operation to perform.  
 
-CLI Usage: `princeps_mathematicarum_imaginum.exe <INPUT_FILE_PATH> <OUTPUT_FILE_PATH> <OPERATION> [FILTER_TYPE] [FILTER_PARAMETER]`
+`princeps_mathematicarum_imaginum.exe <INPUT_FILE_PATH> <OUTPUT_FILE_PATH> <OPERATION> [FILTER_TYPE] [FILTER_PARAMETER]`
 
 - INPUT_FILE_PATH : The path of the file to process
 - OUTPUT_FILE_PATH : The path where to store resulting image
@@ -15,12 +15,13 @@ CLI Usage: `princeps_mathematicarum_imaginum.exe <INPUT_FILE_PATH> <OUTPUT_FILE_
 - FILTER_TYPE : (optional) specifies the type of filter to apply. Only mandatory/usefull when chosen operation is "filter"
 - FILTER_PARAMETER : (optional) an additional parameter, depending on filter type
 
-Example : `princeps_mathematicarum_imaginum.exe /path/to/my/image/mountain-8487679_1920.jpg /path/to/my/image/blurred_mountain.png filter gaussian_blur 0.8`
+Example :  
+`princeps_mathematicarum_imaginum.exe /path/to/my/image/mountain-8487679_1920.jpg /path/to/my/image/blurred_mountain.png filter gaussian_blur 0.8`
 
 ### OPERATION argument
 The operation argument must be one of these values :
 - "inverse" to perform a color inversion (See [full documentation on inversion operation here](#inversion-operation))
-- "filter" to apply one of the available filters (See [full documentation on available and their usage here](#filters))
+- "filter" to apply one of the available filters (See [full documentation on available filters and their usage here](#filters))
 
 ## Available operations
 
