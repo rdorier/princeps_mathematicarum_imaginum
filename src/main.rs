@@ -1,29 +1,20 @@
-use anyhow::{Context, Result, anyhow};
+use anyhow::{Context, Result};
 use filters::{Filtering, GaussianBlur, SobelFilter};
-use image::ImageReader;
-use image_processing::inverse;
-use std::{env};
+use image_processing::{inverse, read_image_from_path};
+use std::env;
+
+mod errors;
+use errors::*;
 
 
 
-#[derive(PartialEq)]
-enum CLICommandValidity {
-    ValidCommand,
-    InvalidCommand,
-}
-
-fn main() -> Result<()> {
-    // check if CLI command enter by user is valid
-    let mut command_validity = CLICommandValidity::ValidCommand;
-
+fn main() -> Result<(), Error> {
     // collect arguments pass to the tool using CLI
     let args: Vec<String> = env::args().collect();
 
     // check parameters number
     if args.len() < 4 {
-        return Err(anyhow!(
-            "Not enough arguments given to the CLI. You must at least specify an input image, an output location and an operation to perform."
-        ));
+        return Err(Error::NotEnoughArguments);
     }
 
     // get path of image to treat
@@ -33,57 +24,52 @@ fn main() -> Result<()> {
 
     let operation = &args[3];
 
-    // try to open input image
-    let reader = ImageReader::open(input_file)
-        .with_context(|| format!("Failed to open input file '{}'", input_file))?
-        .with_guessed_format()
-        .context("Could not guess image format")?;
-
-    // decode input image and convert it to RGBA
-    let img = reader.decode().context("Failed to decode image")?;
-    let mut img = img.to_rgba8();
+    let img = read_image_from_path(input_file)
+        .with_context(|| format!("Could not read file `{}`", input_file))?;
 
     println!("Image dimension : {:?}", img.dimensions());
 
-    match operation.as_str() {
-        "-inverse" => img = inverse(img),
+    let resulting_img = match operation.as_str() {
+        "-inverse" => Ok(inverse(img)),
         "-filter" => {
             if args.len() >= 5 {
                 let filter_type = args[4].clone();
-                img = match filter_type.as_str() {
+                match filter_type.as_str() {
                     "sobel" => {
                         let sobel_filter = SobelFilter;
-                        sobel_filter.filter(img)
-                    },
+                        Ok(sobel_filter.filter(img))
+                    }
                     "gaussian_blur" => {
-                        let sigma = if args.len() >= 6 {args[5].parse()?} else {3.0};
-                        let gaussian_blur_filter = GaussianBlur::try_new(sigma);
-                        gaussian_blur_filter.filter(img)
-                    },
+                        let sigma = if args.len() >= 6 {
+                            args[5].parse().with_context(|| {
+                                format!("Sigma argument value {} is not a number", args[5])
+                            })?
+                        } else {
+                            3.0
+                        };
+                        let gaussian_blur_filter = GaussianBlur::try_new(sigma)
+                            .with_context(|| "Failed to initialize Gaussian Blur kernel")?;
+                        Ok(gaussian_blur_filter.filter(img))
+                    }
                     _ => {
-                        println!("Unknown filter name : {filter_type}");
-                        command_validity = CLICommandValidity::InvalidCommand;
-                        img
+                        Err(Error::UnknownFilter(filter_type))
                     }
                 }
             }
+            else {
+                Err(Error::NotEnoughArguments)
+            }
         }
         _ => {
-            println!("Unknown requested operation : {operation}");
-            command_validity = CLICommandValidity::InvalidCommand
+            Err(Error::UnknownOperation(operation.clone()))
         }
-    }
+    }?;
 
-    if command_validity == CLICommandValidity::ValidCommand {
-        // save resulting image
-        img.save(output_file)
-            .with_context(|| format!("Failed to save output file '{}'", output_file))?;
-        println!("Resulting image saved at location : {output_file}");
-    } else {
-        // exit if invalid operation requested
-        println!("Invalid operation requested ! Nothing to do here !")
-    }
+    // save resulting image
+    resulting_img.save(output_file)
+        .with_context(|| format!("Failed to save output file {output_file}"))?;
+    println!("Resulting image saved at location : {output_file}");
 
-    // TODO : improve error and result handling
+
     Ok(())
 }

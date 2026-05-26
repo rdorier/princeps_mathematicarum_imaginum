@@ -6,13 +6,25 @@ The project name is a reference to Carl Friedrich Gauss, considered as the Princ
 ## Command-Line Interface usage
 
 The tool works as a CLI. You must pass three arguments : the first being the path to the input image you want to treat, the second one, the path to the resulting image, and the last one the operation to perform.  
+
 The following argument is the operation type to perform :
 - "-inverse" to perform a color inversion
 - "-filter" to apply one of the available filters
 
+## Available operations
+
+### Inverse
+
+Invert each pixel of the image, meaning that every white pixel became a black one, etc. Substantially, it substracts every channel value (ranged from 0 to 255, inclusive) of the pixel to 255. Use `-inverse` command to inverse an input image.  
+
+![Test image as moutains landscape](doc/images/mountain-8487679_1920.jpg)
+Example of an input image  
+![Resulting inverted image](doc/images/inverse.png)
+Resulting inverted image
+
 ## Available filters
 
-## Edges Detection using Sobel Filter
+### Edges Detection using Sobel Filter
 
 Compute intensity gradient of the input image to detect edges. Use `-filter sobel` command to apply it to input image.
 
@@ -21,7 +33,7 @@ Example of an input image
 ![Resulting image with sobel filter](doc/images/sobel_filter.png)
 Resulting edge detection using Sobel Filter
 
-## Gaussian Blur
+### Gaussian Blur
 
 This algorithm blurs a given image using the Gaussian function. It takes a sigma value to define the size of the kernel used to blur every pixel of the given image. The Gaussian function is then used to fill the kernel with the neighbours weights. Use `-filter gaussian_blur` command to apply it to input image.
 
@@ -36,7 +48,7 @@ Resulting blurred image with a sigma value of 10.5
 
 1. Done : Basic pixels manipulation with `image` crate(read an image, and apply a simple transformation like color inversion)
 2. Done : Implement a convolution filter (like Sobel one for edges detection)
-3. TODO : Implement several filters (GaussianBlur, EdgeDetection, Sharpen) using POO
+3. WIP : Implement several filters (GaussianBlur, EdgeDetection, Sharpen) using POO
 4. TODO : use `rayon` for parallel treatments and have quicker filters
-5. TODO : create a reusable Rust crate with a simple CLI
+5. WIP : create a reusable Rust crate with a simple CLI
 6. TODO : add unit tests
