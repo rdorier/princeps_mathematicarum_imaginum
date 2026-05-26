@@ -1,9 +1,9 @@
 use image::{ImageReader, Rgba, RgbaImage, Pixel};
 use ndarray::{Array2};
 
-mod error;
+mod errors;
 
-pub use error::*;
+pub use errors::*;
 
 pub fn read_image_from_path(file_path: &String) -> Result<RgbaImage, Error>{
     // try to open input image
