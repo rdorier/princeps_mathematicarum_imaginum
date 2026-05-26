@@ -26,7 +26,9 @@ Resulting inverted image
 
 ### Edges Detection using Sobel Filter
 
-Compute intensity gradient of the input image to detect edges. Use `-filter sobel` command to apply it to input image.
+Compute intensity gradient of the input image to detect edges. This filter is a convolution, meaning that a matrix, known as kernel, applies a transformation to each pixel of the image by computing a new value based on the values of the pixel and its neighbours.  
+
+Use `-filter sobel` command to apply it to input image.
 
 ![Test image as moutains landscape](doc/images/mountain-8487679_1920.jpg)
 Example of an input image  
