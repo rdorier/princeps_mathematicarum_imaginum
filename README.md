@@ -29,7 +29,9 @@ The operation argument must be one of these values :
 
 <a name="inversion-operation"></a>
 
-Invert each pixel of the image, meaning that every white pixel became a black one, etc. Substantially, it substracts every channel value (ranged from 0 to 255, inclusive) of the pixel to 255. Use `-inverse` command to inverse an input image.  
+Invert each pixel of the image, meaning that every white pixel became a black one, etc. Substantially, it substracts every channel value (ranged from 0 to 255, inclusive) of the pixel to 255.  
+
+Use `princeps_mathematicarum_imaginum.exe <INPUT_FILE_PATH> <OUTPUT_FILE_PATH> inverse` command to inverse an input image.  
 
 ![Test image as moutains landscape](doc/images/mountain-8487679_1920.jpg)
 Example of an input image  
@@ -42,7 +44,9 @@ Resulting inverted image
 
 ### Edges Detection using Sobel Filter
 
-Compute intensity gradient of the input image to detect edges. Use `-filter sobel` command to apply it to input image.
+Compute intensity gradient of the input image to detect edges.  
+
+Use `princeps_mathematicarum_imaginum.exe <INPUT_FILE_PATH> <OUTPUT_FILE_PATH> filter sobel` command to apply it to input image.
 
 ![Test image as moutains landscape](doc/images/mountain-8487679_1920.jpg)
 Example of an input image  
@@ -51,7 +55,9 @@ Resulting edge detection using Sobel Filter
 
 ### Gaussian Blur
 
-This algorithm blurs a given image using the Gaussian function. It takes a sigma value to define the size of the kernel used to blur every pixel of the given image. The Gaussian function is then used to fill the kernel with the neighbours weights. Use `-filter gaussian_blur` command to apply it to input image.
+This algorithm blurs a given image using the Gaussian function. It takes a sigma value to define the size of the kernel used to blur every pixel of the given image. The Gaussian function is then used to fill the kernel with the neighbours weights.  
+
+Use `princeps_mathematicarum_imaginum.exe <INPUT_FILE_PATH> <OUTPUT_FILE_PATH> filter gaussian_blur [FILTER_PARAMETER]` command to apply it to input image, where FILTER_PARAMETER is the sigma value to use. If no sigma value is given, the kernel will be computed with a default value of 3.0.
 
 ![Test image as moutains landscape](doc/images/mountain-8487679_1920.jpg)
 Example of an input image  
