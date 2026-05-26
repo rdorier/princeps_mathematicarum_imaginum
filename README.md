@@ -72,5 +72,5 @@ Resulting blurred image with a sigma value of 10.5
 2. Done : Implement a convolution filter (like Sobel one for edges detection)
 3. WIP : Implement several filters (GaussianBlur, EdgeDetection, Sharpen) using POO
 4. TODO : use `rayon` for parallel treatments and have quicker filters
-5. WIP : create a reusable Rust crate with a simple CLI
+5. DONE : create a reusable Rust crate with a simple CLI
 6. TODO : add unit tests
