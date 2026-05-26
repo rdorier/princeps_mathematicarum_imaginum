@@ -54,7 +54,8 @@ fn main() -> Result<(), Error> {
                         } else {
                             3.0
                         };
-                        let gaussian_blur_filter = GaussianBlur::try_new(sigma);
+                        let gaussian_blur_filter = GaussianBlur::try_new(sigma)
+                            .with_context(|| "Failed to initialize Gaussian Blur kernel")?;
                         gaussian_blur_filter.filter(img)
                     }
                     _ => {

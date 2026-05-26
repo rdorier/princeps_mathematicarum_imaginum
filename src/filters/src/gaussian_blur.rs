@@ -1,6 +1,6 @@
-use std::f64::consts::PI;
+use crate::{Error, Filtering};
 use image::{Pixel, Rgba, RgbaImage};
-use crate::Filtering;
+use std::f64::consts::PI;
 
 /// Filter to blur an image using the Gaussian function
 pub struct GaussianBlur {
@@ -8,18 +8,17 @@ pub struct GaussianBlur {
     kernel_size: usize,
 }
 
-
 impl GaussianBlur {
     /// Create a new gaussian blur filter.
-    /// 
+    ///
     /// # Arguments
     /// * `sigma` - The standard deviation controlling the blur spread.
-    /// 
+    ///
     /// # Invariant
     /// - `sigma` value must be > 0
-    pub fn try_new(sigma:f64) -> Self {
+    pub fn try_new(sigma: f64) -> Result<Self, Error> {
         if sigma < 0.0 {
-            panic!("Sigma value must be greater than 0"); // TODO : better error management
+            return Err(Error::InvalidSigma(sigma));
         }
 
         let mut kernel_size = ((6.0 * sigma).ceil() as usize).max(3);
@@ -38,10 +37,10 @@ impl GaussianBlur {
             }
         }
 
-        Self {
+        Ok(Self {
             kernel,
-            kernel_size
-        }
+            kernel_size,
+        })
     }
 }
 
@@ -66,8 +65,10 @@ impl Filtering for GaussianBlur {
                     for ky in 0..self.kernel_size {
                         for kx in 0..self.kernel_size {
                             // calculate coordinates of current neighbour pixel (shifted by hald kernel size to center align Kernel with current pixel calculated (x,y))
-                            let neighbour_x = (x as i128) + (kx as i128) - (half_kernel_size as i128);
-                            let neighbour_y = (y as i128) + (ky as i128) - (half_kernel_size as i128);
+                            let neighbour_x =
+                                (x as i128) + (kx as i128) - (half_kernel_size as i128);
+                            let neighbour_y =
+                                (y as i128) + (ky as i128) - (half_kernel_size as i128);
 
                             if neighbour_x >= 0
                                 && neighbour_x < width as i128
