@@ -19,12 +19,14 @@ Example : `princeps_mathematicarum_imaginum.exe /path/to/my/image/mountain-84876
 
 ### OPERATION argument
 The operation argument must be one of these values :
-- "inverse" to perform a color inversion
-- "filter" to apply one of the available filters
+- "inverse" to perform a color inversion (See [full documentation on inversion operation here](#inversion-operation))
+- "filter" to apply one of the available filters (See [full documentation on available and their usage here](#filters))
 
 ## Available operations
 
 ### Inverse
+
+<a name="inversion-operation"></a>
 
 Invert each pixel of the image, meaning that every white pixel became a black one, etc. Substantially, it substracts every channel value (ranged from 0 to 255, inclusive) of the pixel to 255. Use `-inverse` command to inverse an input image.  
 
@@ -34,6 +36,8 @@ Example of an input image
 Resulting inverted image
 
 ## Available filters
+
+<a name="filters"></a>
 
 ### Edges Detection using Sobel Filter
 
