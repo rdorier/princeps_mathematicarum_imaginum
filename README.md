@@ -5,7 +5,7 @@ The project name is a reference to Carl Friedrich Gauss, considered as the Princ
 
 ## Command-Line Interface usage
 
-The tool works as a CLI. It takes several arguments as shown below. Notes that you must pass at least three arguments : the first being the path to the input image you want to treat, the second one, the path to the resulting image, and the last one the operation to perform.  
+The tool works as a CLI. It takes several arguments as shown below. Notes that you must pass at least three arguments : the first being the path to the input image you want to treat, the second one, the path to the resulting image, and the last one the operation to perform.
 
 `princeps_mathematicarum_imaginum.exe <INPUT_FILE_PATH> <OUTPUT_FILE_PATH> <OPERATION> [FILTER_TYPE] [FILTER_PARAMETER]`
 
@@ -19,7 +19,9 @@ Example :
 `princeps_mathematicarum_imaginum.exe /path/to/my/image/mountain-8487679_1920.jpg /path/to/my/image/blurred_mountain.png filter gaussian_blur 0.8`
 
 ### OPERATION argument
+
 The operation argument must be one of these values :
+
 - "inverse" to perform a color inversion (See [full documentation on inversion operation here](#inversion-operation))
 - "filter" to apply one of the available filters (See [full documentation on available filters and their usage here](#filters))
 
@@ -29,9 +31,9 @@ The operation argument must be one of these values :
 
 <a name="inversion-operation"></a>
 
-Invert each pixel of the image, meaning that every white pixel became a black one, etc. Substantially, it substracts every channel value (ranged from 0 to 255, inclusive) of the pixel to 255.  
+Invert each pixel of the image, meaning that every white pixel became a black one, etc. Substantially, it substracts every channel value (ranged from 0 to 255, inclusive) of the pixel to 255.
 
-Use `princeps_mathematicarum_imaginum.exe <INPUT_FILE_PATH> <OUTPUT_FILE_PATH> inverse` command to inverse an input image.  
+Use `princeps_mathematicarum_imaginum.exe <INPUT_FILE_PATH> <OUTPUT_FILE_PATH> inverse` command to inverse an input image.
 
 ![Test image as moutains landscape](doc/images/mountain-8487679_1920.jpg)
 Example of an input image  
@@ -44,7 +46,7 @@ Resulting inverted image
 
 ### Edges Detection using Sobel Filter
 
-Compute intensity gradient of the input image to detect edges.  
+Compute intensity gradient of the input image to detect edges. This filter is a convolution, meaning that a matrix, known as kernel, applies a transformation to each pixel of the image by computing a new value based on the values of the pixel and its neighbours.
 
 Use `princeps_mathematicarum_imaginum.exe <INPUT_FILE_PATH> <OUTPUT_FILE_PATH> filter sobel` command to apply it to input image.
 
@@ -55,7 +57,7 @@ Resulting edge detection using Sobel Filter
 
 ### Gaussian Blur
 
-This algorithm blurs a given image using the Gaussian function. It takes a sigma value to define the size of the kernel used to blur every pixel of the given image. The Gaussian function is then used to fill the kernel with the neighbours weights.  
+This algorithm blurs a given image using the Gaussian function. It takes a sigma value to define the size of the kernel used to blur every pixel of the given image. The Gaussian function is then used to fill the kernel with the neighbours weights.
 
 Use `princeps_mathematicarum_imaginum.exe <INPUT_FILE_PATH> <OUTPUT_FILE_PATH> filter gaussian_blur [FILTER_PARAMETER]` command to apply it to input image, where FILTER_PARAMETER is the sigma value to use. If no sigma value is given, the kernel will be computed with a default value of 3.0.
 
