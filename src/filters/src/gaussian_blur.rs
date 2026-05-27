@@ -111,8 +111,9 @@ mod tests {
 
     #[test]
     fn should_compute_gaussian_kernel() {
-        let gaussian_blur_filter = GaussianBlur::try_new(0.3);
+        let gaussian_blur_filter = GaussianBlur::try_new(0.8);
         assert!(gaussian_blur_filter.is_ok());
+        assert_eq!(gaussian_blur_filter.unwrap().kernel_size, 5);
     }
 
     #[test]
