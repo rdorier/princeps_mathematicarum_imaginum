@@ -111,8 +111,22 @@ mod tests {
 
     #[test]
     fn should_compute_gaussian_kernel() {
-        let gaussian_blur_filter = GaussianBlur::try_new(0.1);
+        let gaussian_blur_filter = GaussianBlur::try_new(0.3);
         assert!(gaussian_blur_filter.is_ok());
+    }
+
+    #[test]
+    fn should_use_safety_check_for_kernel_size() {
+        // ensure that even with very little sigma, kernel size is at least 3
+        let gaussian_blur_filter = GaussianBlur::try_new(0.01);
+        assert_eq!(gaussian_blur_filter.unwrap().kernel_size, 3);
+    }
+
+    #[test]
+    fn should_return_odd_size() {
+        // ensure that even with sigma value that would give an even number after calculation, kernel size is a odd number
+        let gaussian_blur_filter = GaussianBlur::try_new(0.57);
+        assert_eq!(gaussian_blur_filter.unwrap().kernel_size, 5);
     }
 
     #[test]
