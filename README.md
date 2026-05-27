@@ -18,6 +18,8 @@ The tool works as a CLI. It takes several arguments as shown below. Notes that y
 Example :  
 `princeps_mathematicarum_imaginum.exe /path/to/my/image/mountain-8487679_1920.jpg /path/to/my/image/blurred_mountain.png filter gaussian_blur 0.8`
 
+You can run command with `--help` flag to display help documentation.
+
 ### OPERATION argument
 
 The operation argument must be one of these values :
