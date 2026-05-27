@@ -104,3 +104,20 @@ impl Filtering for GaussianBlur {
         blurred_image
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn should_compute_gaussian_kernel() {
+        let gaussian_blur_filter = GaussianBlur::try_new(0.1);
+        assert!(gaussian_blur_filter.is_ok());
+    }
+
+    #[test]
+    fn should_throw_invalid_sigma() {
+        let gaussian_blur_filter = GaussianBlur::try_new(-0.1);
+        assert!(matches!(gaussian_blur_filter, Err(Error::InvalidSigma(_))));
+    }
+}
