@@ -1,11 +1,11 @@
-use image::{ImageReader, Rgba, RgbaImage, Pixel};
-use ndarray::{Array2};
+use image::{ImageReader, Pixel, Rgba, RgbaImage};
+use ndarray::Array2;
 
 mod errors;
 
 pub use errors::*;
 
-pub fn read_image_from_path(file_path: &String) -> Result<RgbaImage, Error>{
+pub fn read_image_from_path(file_path: &String) -> Result<RgbaImage, Error> {
     // try to open input image
     let reader = ImageReader::open(file_path)
         .map_err(|_| Error::FileOpeningError(file_path.clone()))?
@@ -51,18 +51,20 @@ pub fn gray_array_to_rgba_conversion(gray_array: &Array2<f32>) -> RgbaImage {
         for x in 0..width {
             // get intensity value and transfer it equally between red, blue and green channel
             let intensity = gray_array[[y, x]].clamp(0.0, 255.0) as u8;
-            rgba_img.put_pixel(x as u32, y as u32, Rgba([intensity, intensity, intensity, 255]));
+            rgba_img.put_pixel(
+                x as u32,
+                y as u32,
+                Rgba([intensity, intensity, intensity, 255]),
+            );
         }
     }
 
     rgba_img
 }
 
-
-
-pub fn inverse(mut img : RgbaImage ) -> RgbaImage  {
+pub fn inverse(mut img: RgbaImage) -> RgbaImage {
     // Invert pixels value of the input image.
-    for pixel in img.pixels_mut(){
+    for pixel in img.pixels_mut() {
         pixel.invert();
     }
 

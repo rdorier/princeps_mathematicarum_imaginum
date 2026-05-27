@@ -77,4 +77,4 @@ Resulting blurred image with a sigma value of 10.5
 3. WIP : Implement several filters (GaussianBlur, EdgeDetection, Sharpen) using POO
 4. TODO : use `rayon` for parallel treatments and have quicker filters
 5. DONE : create a reusable Rust crate with a simple CLI
-6. TODO : add unit tests
+6. DONE : add unit tests
