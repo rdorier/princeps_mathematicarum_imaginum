@@ -70,6 +70,12 @@ Resulting blurred image with a sigma value of 3.0
 ![Resulting image with gaussian blur applied with 10.5 as sigma value](doc/images/gaussian_blur_sigma10.5.png)
 Resulting blurred image with a sigma value of 10.5
 
+#### Performance improvement
+
+For better performance, the aglorithm uses separability property of the Gaussian function : G(x,y) = G(x) . G(y)  
+It allows to apply the Gaussian function on one dimension (width of the image for example), then on the second one (height for example), to determine final result on the two dimensions.  
+Indeed, the complexity when applying the 2D kernel direcly on each pixel is O(k² . N), where k is the kernel size, and N the number of pixels of the image, but when applying the two separable 1D kernel, the complexity becomes O(k . N)
+
 ## Goals :
 
 1. Done : Basic pixels manipulation with `image` crate(read an image, and apply a simple transformation like color inversion)
