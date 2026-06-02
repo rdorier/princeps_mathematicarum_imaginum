@@ -30,12 +30,21 @@ impl GaussianBlur {
 
         // one-dimensional kernel that will be applied both on row and on column of the image to blur
         let mut kernel = vec![0.0; kernel_size];
+        let mut total_weights: f64 = 0.0;
 
         for x in 0..kernel_size {
             // 2D Gaussian function: G(x, y) = (1 / (2 * pi * sigma^2)) * exp(-(x^2 + y^2) / (2 * sigma^2))
             // is transformed in a 1-dimensional function
-            kernel[x] = (1.0 / (2.0 * PI * sigma * sigma))
+            let weight = (1.0 / (2.0 * PI * sigma * sigma))
                 * (-((x * x) as f64) / (2.0 * sigma * sigma)).exp();
+
+            kernel[x] = weight;
+            total_weights += weight;
+        }
+
+        // Normalize weights of the kernel sothey sum to 1.0, to avoid having darker or brighter image
+        for weight in kernel.iter_mut() {
+            *weight /= total_weights;
         }
 
         Ok(Self {
@@ -54,10 +63,7 @@ impl Filtering for GaussianBlur {
         let mut temp_image = RgbaImage::new(width, height);
         let mut blurred_image = RgbaImage::new(width, height);
 
-        // TODO : mutualize code to avoid similar doouble loop ? For example,s omething like :
-        // let mut blurred_image = apply_1d_kernel(input_img, x)
-        // blurred_image = apply_1d_kernel(blurred_image, y)
-
+        // TODO : use rayon to parallelize calculation for each row independently
         // apply kernel horizontaly
         for y in 0..height {
             for x in 0..width {
@@ -65,7 +71,6 @@ impl Filtering for GaussianBlur {
 
                 for channel_index in 0..4 {
                     let mut gaussian_sum: f64 = 0.0;
-                    let mut accumulated_weight = 0.0;
 
                     for kx in 0..self.kernel_size {
                         // calculate coordinates of current neighbour pixel (shifted by hald kernel size to center align Kernel with current pixel calculated (x,y))
@@ -73,30 +78,23 @@ impl Filtering for GaussianBlur {
 
                         if neighbour_x >= 0 && neighbour_x < width as i128 {
                             let weight = self.kernel[kx];
-
                             gaussian_sum += (input_img
                                 .get_pixel_checked(neighbour_x as u32, y as u32)
                                 .unwrap()
                                 .channels()[channel_index]
                                 as f64)
                                 * weight;
-                            accumulated_weight += weight;
                         }
                     }
 
-                    // normalize weight to avoid having darker or brighter image
-                    let normalized_gaussian_value = if accumulated_weight > 0.0 {
-                        gaussian_sum / accumulated_weight
-                    } else {
-                        0.0
-                    };
-                    blurred_pixel[channel_index] = normalized_gaussian_value as u8;
+                    blurred_pixel[channel_index] = gaussian_sum as u8;
                 }
 
                 temp_image[(x, y)] = blurred_pixel;
             }
         }
 
+        // TODO : use rayon to parallelize calculation for each column independently
         // apply kernel vertically
         for y in 0..height {
             for x in 0..width {
@@ -104,7 +102,6 @@ impl Filtering for GaussianBlur {
 
                 for channel_index in 0..4 {
                     let mut gaussian_sum: f64 = 0.0;
-                    let mut accumulated_weight = 0.0;
 
                     for ky in 0..self.kernel_size {
                         // calculate coordinates of current neighbour pixel (shifted by hald kernel size to center align Kernel with current pixel calculated (x,y))
@@ -112,24 +109,16 @@ impl Filtering for GaussianBlur {
 
                         if neighbour_y >= 0 && neighbour_y < height as i128 {
                             let weight = self.kernel[ky];
-
                             gaussian_sum += (temp_image
                                 .get_pixel_checked(x as u32, neighbour_y as u32)
                                 .unwrap()
                                 .channels()[channel_index]
                                 as f64)
                                 * weight;
-                            accumulated_weight += weight;
                         }
                     }
 
-                    // normalize weight to avoid having adrker or brighter image
-                    let normalized_gaussian_value = if accumulated_weight > 0.0 {
-                        gaussian_sum / accumulated_weight
-                    } else {
-                        0.0
-                    };
-                    blurred_pixel[channel_index] = normalized_gaussian_value as u8;
+                    blurred_pixel[channel_index] = gaussian_sum as u8;
                 }
 
                 blurred_image[(x, y)] = blurred_pixel;
