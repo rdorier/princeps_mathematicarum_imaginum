@@ -1,7 +1,7 @@
 use anyhow::{Context, Result};
 use clap::Parser;
 use filters::{Filtering, GaussianBlur, SobelFilter};
-use image_processing::{inverse, read_image_from_path};
+use image_processing::{gamma_correction, inverse, read_image_from_path};
 
 mod errors;
 use errors::*;
@@ -39,6 +39,7 @@ fn main() -> Result<(), Error> {
 
     let resulting_img = match operation.as_str() {
         "inverse" => Ok(inverse(img)),
+        "gamma_correction" => Ok(gamma_correction(&img, 0.8)),
         "filter" => {
             let filter_type = args.filter_type.ok_or(Error::NotEnoughArguments)?;
             match filter_type.as_str() {
