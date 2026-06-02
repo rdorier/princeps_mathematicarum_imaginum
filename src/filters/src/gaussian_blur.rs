@@ -1,5 +1,6 @@
 use crate::{Error, Filtering};
-use image::{Pixel, Rgba, RgbaImage};
+use image::{Pixel, RgbaImage};
+use rayon::iter::{IntoParallelIterator, ParallelIterator};
 use std::f64::consts::PI;
 
 /// Filter to blur an image using the Gaussian function
@@ -60,72 +61,82 @@ impl Filtering for GaussianBlur {
 
         let half_kernel_size = self.kernel_size / 2; // use to center kernel on pixel
 
-        let mut temp_image = RgbaImage::new(width, height);
-        let mut blurred_image = RgbaImage::new(width, height);
+        // apply kernel horizontaly using parallelization to compute each row independently
+        let horizontal_pass_data: Vec<u8> = (0..height)
+            .into_par_iter()
+            .map(|y| {
+                let mut row_data: Vec<u8> = Vec::new();
 
-        // TODO : use rayon to parallelize calculation for each row independently
-        // apply kernel horizontaly
-        for y in 0..height {
-            for x in 0..width {
-                let mut blurred_pixel: Rgba<u8> = Rgba([0; 4]);
+                for x in 0..width {
+                    for channel_index in 0..4 {
+                        let mut gaussian_sum: f64 = 0.0;
 
-                for channel_index in 0..4 {
-                    let mut gaussian_sum: f64 = 0.0;
+                        for kx in 0..self.kernel_size {
+                            // calculate coordinates of current neighbour pixel (shifted by half kernel size to center align Kernel with current pixel calculated (x,y))
+                            let neighbour_x =
+                                (x as i128) + (kx as i128) - (half_kernel_size as i128);
 
-                    for kx in 0..self.kernel_size {
-                        // calculate coordinates of current neighbour pixel (shifted by hald kernel size to center align Kernel with current pixel calculated (x,y))
-                        let neighbour_x = (x as i128) + (kx as i128) - (half_kernel_size as i128);
-
-                        if neighbour_x >= 0 && neighbour_x < width as i128 {
-                            let weight = self.kernel[kx];
-                            gaussian_sum += (input_img
-                                .get_pixel_checked(neighbour_x as u32, y as u32)
-                                .unwrap()
-                                .channels()[channel_index]
-                                as f64)
-                                * weight;
+                            if neighbour_x >= 0 && neighbour_x < width as i128 {
+                                let weight = self.kernel[kx];
+                                gaussian_sum += (input_img
+                                    .get_pixel_checked(neighbour_x as u32, y as u32)
+                                    .unwrap()
+                                    .channels()[channel_index]
+                                    as f64)
+                                    * weight;
+                            }
                         }
-                    }
 
-                    blurred_pixel[channel_index] = gaussian_sum as u8;
+                        //blurred_pixel[channel_index] = gaussian_sum as u8;
+                        row_data.push(gaussian_sum as u8);
+                    }
                 }
 
-                temp_image[(x, y)] = blurred_pixel;
-            }
-        }
+                row_data
+            })
+            .flatten()
+            .collect();
 
-        // TODO : use rayon to parallelize calculation for each column independently
-        // apply kernel vertically
-        for y in 0..height {
-            for x in 0..width {
-                let mut blurred_pixel: Rgba<u8> = Rgba([0; 4]);
+        let temp_image = RgbaImage::from_vec(width, height, horizontal_pass_data).unwrap(); // SAFETY as buffer is build from image width and weight
 
-                for channel_index in 0..4 {
-                    let mut gaussian_sum: f64 = 0.0;
+        // apply kernel verticaly using parallelization to compute each column independently
+        let vertical_pass_data: Vec<u8> = (0..width)
+            .into_par_iter()
+            .map(|x| {
+                let mut column_data: Vec<u8> = Vec::new();
 
-                    for ky in 0..self.kernel_size {
-                        // calculate coordinates of current neighbour pixel (shifted by hald kernel size to center align Kernel with current pixel calculated (x,y))
-                        let neighbour_y = (y as i128) + (ky as i128) - (half_kernel_size as i128);
+                for y in 0..height {
+                    for channel_index in 0..4 {
+                        let mut gaussian_sum: f64 = 0.0;
 
-                        if neighbour_y >= 0 && neighbour_y < height as i128 {
-                            let weight = self.kernel[ky];
-                            gaussian_sum += (temp_image
-                                .get_pixel_checked(x as u32, neighbour_y as u32)
-                                .unwrap()
-                                .channels()[channel_index]
-                                as f64)
-                                * weight;
+                        for ky in 0..self.kernel_size {
+                            // calculate coordinates of current neighbour pixel (shifted by half kernel size to center align Kernel with current pixel calculated (x,y))
+                            let neighbour_y =
+                                (y as i128) + (ky as i128) - (half_kernel_size as i128);
+
+                            if neighbour_y >= 0 && neighbour_y < height as i128 {
+                                let weight = self.kernel[ky];
+                                gaussian_sum += (temp_image
+                                    .get_pixel_checked(x as u32, neighbour_y as u32)
+                                    .unwrap()
+                                    .channels()[channel_index]
+                                    as f64)
+                                    * weight;
+                            }
                         }
-                    }
 
-                    blurred_pixel[channel_index] = gaussian_sum as u8;
+                        column_data.push(gaussian_sum as u8);
+                    }
                 }
 
-                blurred_image[(x, y)] = blurred_pixel;
-            }
-        }
+                column_data
+            })
+            .flatten()
+            .collect();
 
-        blurred_image
+        // TODO : buffer is a column major matrix flatten, and must be transformed into a row major one
+
+        RgbaImage::from_vec(width, height, vertical_pass_data).unwrap() // SAFETY as buffer is build from image width and weight
     }
 }
 
