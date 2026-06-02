@@ -71,11 +71,16 @@ pub fn inverse(mut img: RgbaImage) -> RgbaImage {
     img
 }
 
-pub fn gamma_correction(img: &RgbaImage, gamma: f64) -> RgbaImage {
-    // TODO : check invariants
+/// Correct gamma curve of the given image
+pub fn gamma_correction(img: &RgbaImage, gamma: f64) -> Result<RgbaImage, Error> {
+    // gamma must be greater than 0
+    if gamma <= 0.0 {
+        return Err(Error::NegativeOrNullGamma);
+    }
     let (width, height) = img.dimensions();
     let mut corrected_img = RgbaImage::new(width, height);
 
+    // compute gamma correction to apply
     let gamma_correction = 1.0 / gamma;
 
     for (x,y, pixel) in img.enumerate_pixels() {
@@ -84,5 +89,5 @@ pub fn gamma_correction(img: &RgbaImage, gamma: f64) -> RgbaImage {
         corrected_img[(x, y)] = gamma_corrected_pixel;
     }
 
-    corrected_img
+    Ok(corrected_img)
 }

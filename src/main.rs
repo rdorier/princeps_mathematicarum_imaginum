@@ -36,10 +36,13 @@ fn main() -> Result<(), Error> {
         .with_context(|| format!("Could not read file `{}`", input_file))?;
 
     println!("Image dimension : {:?}", img.dimensions());
-
+    
     let resulting_img = match operation.as_str() {
         "inverse" => Ok(inverse(img)),
-        "gamma_correction" => Ok(gamma_correction(&img, 0.8)),
+        "gamma_correction" => {
+            let corrected_img = gamma_correction(&img, 0.8).with_context(|| "Failed to correct gamma")?;
+            Ok(corrected_img)
+        },
         "filter" => {
             let filter_type = args.filter_type.ok_or(Error::NotEnoughArguments)?;
             match filter_type.as_str() {
