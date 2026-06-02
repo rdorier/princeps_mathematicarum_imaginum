@@ -62,6 +62,7 @@ pub fn gray_array_to_rgba_conversion(gray_array: &Array2<f32>) -> RgbaImage {
     rgba_img
 }
 
+/// Inverse channels value of given image
 pub fn inverse(mut img: RgbaImage) -> RgbaImage {
     // Invert pixels value of the input image.
     for pixel in img.pixels_mut() {
