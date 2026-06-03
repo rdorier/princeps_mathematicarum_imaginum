@@ -1,5 +1,5 @@
 use crate::{Error, Filtering};
-use image::{Pixel, RgbaImage};
+use image::{Pixel, Rgba, RgbaImage};
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
 use std::f64::consts::PI;
 
@@ -100,7 +100,7 @@ impl Filtering for GaussianBlur {
         let temp_image = RgbaImage::from_vec(width, height, horizontal_pass_data).unwrap(); // SAFETY as buffer is build from image width and weight
 
         // apply kernel verticaly using parallelization to compute each column independently
-        let vertical_pass_data: Vec<u8> = (0..width)
+        let vertical_pass_data: Vec<Vec<u8>> = (0..width)
             .into_par_iter()
             .map(|x| {
                 let mut column_data: Vec<u8> = Vec::new();
@@ -131,12 +131,31 @@ impl Filtering for GaussianBlur {
 
                 column_data
             })
-            .flatten()
             .collect();
 
-        // TODO : buffer is a column major matrix flatten, and must be transformed into a row major one
+        // vertical buffer is a column major matrix, so we must rewrite data in resulting image properly
+        let mut blurred_img = RgbaImage::new(width, height);
+        for (x, column) in vertical_pass_data.iter().enumerate() {
+            for y in 0..height {
+                // get channel value for current pixel, as data have been flatten in a column vector
+                let red = column.get((y * 4) as usize);
+                let green = column.get((y * 4 + 1) as usize);
+                let blue = column.get((y * 4 + 2) as usize);
+                let alpha = column.get((y * 4 + 3) as usize);
 
-        RgbaImage::from_vec(width, height, vertical_pass_data).unwrap() // SAFETY as buffer is build from image width and weight
+                // TODO : manage properly options
+
+                let blurred_pixel = Rgba([
+                    *red.unwrap(),
+                    *green.unwrap(),
+                    *blue.unwrap(),
+                    *alpha.unwrap(),
+                ]);
+                blurred_img[(x as u32, y)] = blurred_pixel;
+            }
+        }
+
+        blurred_img
     }
 }
 
