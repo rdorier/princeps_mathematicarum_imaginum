@@ -45,6 +45,12 @@ Resulting inverted image
 
 <a name="gamma-correction"></a>
 
+Gamma represents the non‑linear relationship between the numerical values of an image (input) and the actual brightness produced on a display (output). It defines how midtones, shadows and highlights are distributed.
+
+Most images are stored using a gamma‑encoded curve, so displays apply the inverse curve to reproduce the correct luminance. This is the goal of the gamma correction operation available in this tool.  
+
+Use `princeps_mathematicarum_imaginum.exe <INPUT_FILE_PATH> <OUTPUT_FILE_PATH> gamma-correction <GAMMA>` command to correct image, depending on the given gamma value.  
+
 ![Test image as moutains landscape](doc/images/mountain-8487679_1920.jpg)
 Example of an input image  
 
