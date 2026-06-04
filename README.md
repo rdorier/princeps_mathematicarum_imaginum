@@ -7,13 +7,11 @@ The project name is a reference to Carl Friedrich Gauss, considered as the Princ
 
 The tool works as a CLI. It takes several arguments as shown below. Notes that you must pass at least three arguments : the first being the path to the input image you want to treat, the second one, the path to the resulting image, and the last one the operation to perform.
 
-`princeps_mathematicarum_imaginum.exe <INPUT_FILE_PATH> <OUTPUT_FILE_PATH> <OPERATION> [FILTER_TYPE] [FILTER_PARAMETER]`
+`princeps_mathematicarum_imaginum.exe <INPUT_FILE_PATH> <OUTPUT_FILE_PATH> <COMMAND>`
 
 - INPUT_FILE_PATH : The path of the file to process
 - OUTPUT_FILE_PATH : The path where to store resulting image
-- OPERATION : the operation to perform.
-- FILTER_TYPE : (optional) specifies the type of filter to apply. Only mandatory/usefull when chosen operation is "filter"
-- FILTER_PARAMETER : (optional) an additional parameter, depending on filter type
+- COMMAND : the operation to perform.
 
 Example :  
 `princeps_mathematicarum_imaginum.exe /path/to/my/image/mountain-8487679_1920.jpg /path/to/my/image/blurred_mountain.png filter gaussian_blur 0.8`
@@ -21,13 +19,14 @@ Example :
 You can run command with `--help` flag to display help documentation.
 
 ### OPERATION argument
+1) inverse (See [full documentation on inversion operation here](#inversion-operation))
+2) gamma-correction (See [full documentation on gamma correction here](#gamma-correction)) : 
+- GAMMA : the gamma value to use for correction, a floating value
+3) filter (See [full documentation on available filters and their usage here](#filters)) :
+- FILTER_TYPE : specifies the type of filter to apply
+- FILTER_PARAMETER : (optional) an additional parameter, depending on filter type
 
-The operation argument must be one of these values :
-
-- "inverse" to perform a color inversion (See [full documentation on inversion operation here](#inversion-operation))
-- "filter" to apply one of the available filters (See [full documentation on available filters and their usage here](#filters))
-
-## Available operations
+## Available basic operations
 
 ### Inverse
 
@@ -41,6 +40,25 @@ Use `princeps_mathematicarum_imaginum.exe <INPUT_FILE_PATH> <OUTPUT_FILE_PATH> i
 Example of an input image  
 ![Resulting inverted image](doc/images/inverse.png)
 Resulting inverted image
+
+### Gamma correction
+
+<a name="gamma-correction"></a>
+
+Gamma represents the non‑linear relationship between the numerical values of an image (input) and the actual brightness produced on a display (output). It defines how midtones, shadows and highlights are distributed.
+
+Most images are stored using a gamma‑encoded curve, so displays apply the inverse curve to reproduce the correct luminance. This is the goal of the gamma correction operation available in this tool.  
+
+Use `princeps_mathematicarum_imaginum.exe <INPUT_FILE_PATH> <OUTPUT_FILE_PATH> gamma-correction <GAMMA>` command to correct image, depending on the given gamma value.  
+
+![Test image as moutains landscape](doc/images/mountain-8487679_1920.jpg)
+Example of an input image  
+
+![Resulting image with gamma 0.8](doc/images/gamma_correction_0.8.png)
+Resulting image with gamma 0.8
+
+![Resulting image with gamma 2.2](doc/images/gamma_correction_2.2.png)
+Resulting image with gamma 2.2  
 
 ## Available filters
 
