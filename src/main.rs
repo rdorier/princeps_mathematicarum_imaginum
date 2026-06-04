@@ -31,7 +31,6 @@ enum Commands {
     }
 }
 
-
 fn main() -> Result<(), Error> {
     // parse arguments pass to the tool using CLI
     let args = Cli::parse();
@@ -56,26 +55,26 @@ fn main() -> Result<(), Error> {
             match filter_type.as_str() {
                 "sobel" => {
                     let sobel_filter = SobelFilter;
-                    Ok(sobel_filter.filter(img))
+                    sobel_filter.filter(img).map_err(Error::FailedFilter)
                 }
                 "gaussian_blur" => {
                     let sigma = filter_parameter.unwrap_or(3.0);
                     let gaussian_blur_filter = GaussianBlur::try_new(sigma)
                         .with_context(|| "Failed to initialize Gaussian Blur kernel")?;
-                    Ok(gaussian_blur_filter.filter(img))
+                    gaussian_blur_filter
+                        .filter(img)
+                        .map_err(Error::FailedFilter)
                 }
-                _ => {
-                    Err(Error::UnknownFilter(filter_type))
-                }
+                _ => Err(Error::UnknownFilter(filter_type)),
             }
         }
     }?;
 
     // save resulting image
-    resulting_img.save(output_file.clone())
+    resulting_img
+        .save(output_file.clone())
         .with_context(|| format!("Failed to save output file {output_file}"))?;
     println!("Resulting image saved at location : {output_file}");
-
 
     Ok(())
 }
