@@ -1,6 +1,7 @@
 #[derive(Debug)]
 pub enum Error {
     InvalidSigma(f64),
+    UnfoundChannel,
 }
 
 impl std::fmt::Display for Error {
@@ -10,6 +11,9 @@ impl std::fmt::Display for Error {
                 f,
                 "Sigma value must be greater than 0. Value providen was {value}"
             ),
+            Error::UnfoundChannel => {
+                write!(f, "Unable to found channel pixel value in flatten vector")
+            }
         }
     }
 }

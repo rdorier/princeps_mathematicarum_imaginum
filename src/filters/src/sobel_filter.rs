@@ -1,12 +1,12 @@
-use ndarray::{Array2, array};
-use crate::Filtering;
+use crate::{Error, Filtering};
 use image::RgbaImage;
 use image_processing::{gray_array_to_rgba_conversion, rgba_to_gray_array_conversion};
+use ndarray::{Array2, array};
 
 pub struct SobelFilter;
 
 impl Filtering for SobelFilter {
-    fn filter(&self, img: RgbaImage) -> RgbaImage {
+    fn filter(&self, img: RgbaImage) -> Result<RgbaImage, Error> {
         // Detect edges using Sobel algorithm.
 
         // sobel kernel to use to find intensity peaks in image : the intensity peaks represent edges
@@ -44,6 +44,6 @@ impl Filtering for SobelFilter {
         }
 
         // convert array into a grayscale image
-        gray_array_to_rgba_conversion(&edges_array)
+        Ok(gray_array_to_rgba_conversion(&edges_array))
     }
 }

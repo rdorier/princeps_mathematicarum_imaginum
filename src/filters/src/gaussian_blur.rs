@@ -56,7 +56,7 @@ impl GaussianBlur {
 }
 
 impl Filtering for GaussianBlur {
-    fn filter(&self, input_img: RgbaImage) -> RgbaImage {
+    fn filter(&self, input_img: RgbaImage) -> Result<RgbaImage, Error> {
         let (width, height) = input_img.dimensions();
 
         let half_kernel_size = self.kernel_size / 2; // use to center kernel on pixel
@@ -138,24 +138,23 @@ impl Filtering for GaussianBlur {
         for (x, column) in vertical_pass_data.iter().enumerate() {
             for y in 0..height {
                 // get channel value for current pixel, as data have been flatten in a column vector
-                let red = column.get((y * 4) as usize);
-                let green = column.get((y * 4 + 1) as usize);
-                let blue = column.get((y * 4 + 2) as usize);
-                let alpha = column.get((y * 4 + 3) as usize);
+                let red = column.get((y * 4) as usize).ok_or(Error::UnfoundChannel)?;
+                let green = column
+                    .get((y * 4 + 1) as usize)
+                    .ok_or(Error::UnfoundChannel)?;
+                let blue = column
+                    .get((y * 4 + 2) as usize)
+                    .ok_or(Error::UnfoundChannel)?;
+                let alpha = column
+                    .get((y * 4 + 3) as usize)
+                    .ok_or(Error::UnfoundChannel)?;
 
-                // TODO : manage properly options
-
-                let blurred_pixel = Rgba([
-                    *red.unwrap(),
-                    *green.unwrap(),
-                    *blue.unwrap(),
-                    *alpha.unwrap(),
-                ]);
+                let blurred_pixel = Rgba([*red, *green, *blue, *alpha]);
                 blurred_img[(x as u32, y)] = blurred_pixel;
             }
         }
 
-        blurred_img
+        Ok(blurred_img)
     }
 }
 

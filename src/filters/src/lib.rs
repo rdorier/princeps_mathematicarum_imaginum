@@ -17,5 +17,5 @@ pub trait Filtering {
     ///
     /// # Return
     /// A new image, resulting of the applied filter to input image data.
-    fn filter(&self, img: RgbaImage) -> RgbaImage;
+    fn filter(&self, img: RgbaImage) -> Result<RgbaImage, Error>;
 }
