@@ -15,11 +15,10 @@ struct Cli {
     // the operation to perform
     operation: String,
     //specify the type of filter to apply. Only mandatory/usefull when operation = filter
-    filter_type:Option<String>,
+    filter_type: Option<String>,
     // an additional parameter, depending on filter type
     filter_parameter: Option<f64>,
 }
-
 
 fn main() -> Result<(), Error> {
     // parse arguments pass to the tool using CLI
@@ -44,29 +43,27 @@ fn main() -> Result<(), Error> {
             match filter_type.as_str() {
                 "sobel" => {
                     let sobel_filter = SobelFilter;
-                    Ok(sobel_filter.filter(img))
+                    sobel_filter.filter(img).map_err(Error::FailedFilter)
                 }
                 "gaussian_blur" => {
                     let sigma = args.filter_parameter.unwrap_or(3.0);
                     let gaussian_blur_filter = GaussianBlur::try_new(sigma)
                         .with_context(|| "Failed to initialize Gaussian Blur kernel")?;
-                    Ok(gaussian_blur_filter.filter(img))
+                    gaussian_blur_filter
+                        .filter(img)
+                        .map_err(Error::FailedFilter)
                 }
-                _ => {
-                    Err(Error::UnknownFilter(filter_type))
-                }
+                _ => Err(Error::UnknownFilter(filter_type)),
             }
         }
-        _ => {
-            Err(Error::UnknownOperation(operation.clone()))
-        }
+        _ => Err(Error::UnknownOperation(operation.clone())),
     }?;
 
     // save resulting image
-    resulting_img.save(output_file.clone())
+    resulting_img
+        .save(output_file.clone())
         .with_context(|| format!("Failed to save output file {output_file}"))?;
     println!("Resulting image saved at location : {output_file}");
-
 
     Ok(())
 }
