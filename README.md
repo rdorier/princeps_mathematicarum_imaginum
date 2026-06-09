@@ -19,10 +19,14 @@ Example :
 You can run command with `--help` flag to display help documentation.
 
 ### OPERATION argument
-1) inverse (See [full documentation on inversion operation here](#inversion-operation))
-2) gamma-correction (See [full documentation on gamma correction here](#gamma-correction)) : 
+
+1. inverse (See [full documentation on inversion operation here](#inversion-operation))
+2. gamma-correction (See [full documentation on gamma correction here](#gamma-correction)) :
+
 - GAMMA : the gamma value to use for correction, a floating value
-3) filter (See [full documentation on available filters and their usage here](#filters)) :
+
+3. filter (See [full documentation on available filters and their usage here](#filters)) :
+
 - FILTER_TYPE : specifies the type of filter to apply
 - FILTER_PARAMETER : (optional) an additional parameter, depending on filter type
 
@@ -47,18 +51,18 @@ Resulting inverted image
 
 Gamma represents the non‑linear relationship between the numerical values of an image (input) and the actual brightness produced on a display (output). It defines how midtones, shadows and highlights are distributed.
 
-Most images are stored using a gamma‑encoded curve, so displays apply the inverse curve to reproduce the correct luminance. This is the goal of the gamma correction operation available in this tool.  
+Most images are stored using a gamma‑encoded curve, so displays apply the inverse curve to reproduce the correct luminance. This is the goal of the gamma correction operation available in this tool.
 
-Use `princeps_mathematicarum_imaginum.exe <INPUT_FILE_PATH> <OUTPUT_FILE_PATH> gamma-correction <GAMMA>` command to correct image, depending on the given gamma value.  
+Use `princeps_mathematicarum_imaginum.exe <INPUT_FILE_PATH> <OUTPUT_FILE_PATH> gamma-correction <GAMMA>` command to correct image, depending on the given gamma value.
 
 ![Test image as moutains landscape](doc/images/mountain-8487679_1920.jpg)
-Example of an input image  
+Example of an input image
 
 ![Resulting image with gamma 0.8](doc/images/gamma_correction_0.8.png)
 Resulting image with gamma 0.8
 
 ![Resulting image with gamma 2.2](doc/images/gamma_correction_2.2.png)
-Resulting image with gamma 2.2  
+Resulting image with gamma 2.2
 
 ## Available filters
 
@@ -96,11 +100,12 @@ Indeed, the complexity when applying the 2D kernel directly on each pixel is O(k
 
 Furthermore, this separability allows us to parallelize image treatement, as now each row is independent (calculating row R only needs data from row R, and not the ones from previous or following rows) when doing the horizontal pass, and each column is independent when doing the vertical one.
 
-## Goals :
+### Sharpen
 
-1. Done : Basic pixels manipulation with `image` crate(read an image, and apply a simple transformation like color inversion)
-2. Done : Implement a convolution filter (like Sobel one for edges detection)
-3. WIP : Implement several filters (GaussianBlur, EdgeDetection, Sharpen) using POO
-4. TODO : use `rayon` for parallel treatments and have quicker filters
-5. DONE : create a reusable Rust crate with a simple CLI
-6. DONE : add unit tests
+Use `princeps_mathematicarum_imaginum.exe <INPUT_FILE_PATH> <OUTPUT_FILE_PATH> filter sharpen` command to sharpen the input image.
+
+![Old Manhattan image from Courtauld institute](doc/images/manhattan.jpg)
+Example of an input image from Courtauld institute collection
+
+![Resulting sharpen image](doc/images/sharpen.png)
+Resulting sharpen image
