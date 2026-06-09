@@ -1,6 +1,6 @@
 use anyhow::{Context, Result};
 use clap::{Parser, Subcommand};
-use filters::{Filtering, GaussianBlur, SobelFilter};
+use filters::{Filtering, GaussianBlur, Sharpen, SobelFilter};
 use image_processing::{gamma_correction, inverse, read_image_from_path};
 
 mod errors;
@@ -20,15 +20,15 @@ struct Cli {
 #[derive(Subcommand, Debug, Clone)]
 enum Commands {
     Inverse,
-    GammaCorrection{
-        gamma: f64
+    GammaCorrection {
+        gamma: f64,
     },
     Filter {
         //specify the type of filter to apply
         filter_type: String,
         // an additional parameter, depending on filter type
         filter_parameter: Option<f64>,
-    }
+    },
 }
 
 fn main() -> Result<(), Error> {
@@ -44,30 +44,36 @@ fn main() -> Result<(), Error> {
         .with_context(|| format!("Could not read file `{}`", input_file))?;
 
     println!("Image dimension : {:?}", img.dimensions());
-    
+
     let resulting_img = match args.operation {
         Commands::Inverse => Ok(inverse(img)),
-        Commands::GammaCorrection{gamma} => {
-            let corrected_img = gamma_correction(&img, gamma).with_context(|| "Failed to correct gamma")?;
+        Commands::GammaCorrection { gamma } => {
+            let corrected_img =
+                gamma_correction(&img, gamma).with_context(|| "Failed to correct gamma")?;
             Ok(corrected_img)
-        },
-        Commands::Filter { filter_type, filter_parameter } => {
-            match filter_type.as_str() {
-                "sobel" => {
-                    let sobel_filter = SobelFilter;
-                    sobel_filter.filter(img).map_err(Error::FailedFilter)
-                }
-                "gaussian_blur" => {
-                    let sigma = filter_parameter.unwrap_or(3.0);
-                    let gaussian_blur_filter = GaussianBlur::try_new(sigma)
-                        .with_context(|| "Failed to initialize Gaussian Blur kernel")?;
-                    gaussian_blur_filter
-                        .filter(img)
-                        .map_err(Error::FailedFilter)
-                }
-                _ => Err(Error::UnknownFilter(filter_type)),
-            }
         }
+        Commands::Filter {
+            filter_type,
+            filter_parameter,
+        } => match filter_type.as_str() {
+            "sobel" => {
+                let sobel_filter = SobelFilter;
+                sobel_filter.filter(img).map_err(Error::FailedFilter)
+            }
+            "gaussian_blur" => {
+                let sigma = filter_parameter.unwrap_or(3.0);
+                let gaussian_blur_filter = GaussianBlur::try_new(sigma)
+                    .with_context(|| "Failed to initialize Gaussian Blur kernel")?;
+                gaussian_blur_filter
+                    .filter(img)
+                    .map_err(Error::FailedFilter)
+            }
+            "sharpen" => {
+                let sharpen_filter = Sharpen::new();
+                sharpen_filter.filter(img).map_err(Error::FailedFilter)
+            }
+            _ => Err(Error::UnknownFilter(filter_type)),
+        },
     }?;
 
     // save resulting image

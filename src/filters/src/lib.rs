@@ -2,10 +2,12 @@ use image::RgbaImage;
 
 pub mod errors;
 pub mod gaussian_blur;
+pub mod sharpen;
 pub mod sobel_filter;
 
 pub use errors::*;
 pub use gaussian_blur::*;
+pub use sharpen::*;
 pub use sobel_filter::*;
 
 /// Trait describing fitlers behaviour
