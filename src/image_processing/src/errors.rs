@@ -1,5 +1,6 @@
 #[derive(Debug)]
 pub enum Error {
+    DifferentImagesDimensions,
     FileDecode,
     FileOpeningError(String),
     NegativeOrNullGamma,
@@ -9,6 +10,7 @@ pub enum Error {
 impl std::fmt::Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
+            Error::DifferentImagesDimensions => write!(f, "Images have different dimensions."),
             Error::FileDecode => write!(f, "Could not decode image."),
             Error::FileOpeningError(path) => write!(f, "Failed to open input file {path}"),
             Error::NegativeOrNullGamma => write!(f, "Gamma must be greater than 0"),

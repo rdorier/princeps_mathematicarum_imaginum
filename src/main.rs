@@ -1,6 +1,6 @@
 use anyhow::{Context, Result};
 use clap::{Parser, Subcommand};
-use filters::{Filtering, GaussianBlur, Sharpen, SobelFilter};
+use filters::{Filtering, GaussianBlur, Sharpen, SharpenAlgorithm, SobelFilter};
 use image_processing::{gamma_correction, inverse, read_image_from_path};
 
 mod errors;
@@ -24,10 +24,20 @@ enum Commands {
         gamma: f64,
     },
     Filter {
-        //specify the type of filter to apply
+        /// Specify the type of filter to apply.
+        /// This may be used as a positional argument or a flag
+        #[arg(long = "filter-type")]
         filter_type: String,
-        // an additional parameter, depending on filter type
+
+        /// An additional parameter, depending on filter type
+        /// This optional parameter is an explicit flag
+        #[arg(long = "filter-parameter")]
         filter_parameter: Option<f64>,
+
+        /// Parameter used to specify the algorithm name to use for some filters
+        /// This optional parameter is an explicit flag
+        #[arg(long = "algorithm")]
+        algorithm: Option<String>,
     },
 }
 
@@ -55,6 +65,7 @@ fn main() -> Result<(), Error> {
         Commands::Filter {
             filter_type,
             filter_parameter,
+            algorithm,
         } => match filter_type.as_str() {
             "sobel" => {
                 let sobel_filter = SobelFilter;
@@ -69,7 +80,12 @@ fn main() -> Result<(), Error> {
                     .map_err(Error::FailedFilter)
             }
             "sharpen" => {
-                let sharpen_filter = Sharpen::new();
+                let algorithm_name = algorithm.unwrap_or(String::from("default"));
+                let algorithm = match algorithm_name.as_str() {
+                    "laplacian" => SharpenAlgorithm::Laplacian,
+                    _ => SharpenAlgorithm::DefaultKernel,
+                };
+                let sharpen_filter = Sharpen::new(Some(algorithm));
                 sharpen_filter.filter(img).map_err(Error::FailedFilter)
             }
             _ => Err(Error::UnknownFilter(filter_type)),

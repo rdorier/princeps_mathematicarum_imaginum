@@ -1,21 +1,36 @@
 use image::{Pixel, Rgba, RgbaImage};
+use image_processing::add;
 
 use crate::{Error, Filtering};
 
+#[derive(Debug)]
+pub enum SharpenAlgorithm {
+    DefaultKernel,
+    Laplacian,
+}
+
 pub struct Sharpen {
     kernel: Vec<Vec<f64>>,
+    algorithm: SharpenAlgorithm,
 }
 
 impl Sharpen {
-    pub fn new() -> Self {
-        Self {
-            kernel: vec![vec![0., -1., 0.], vec![-1., 5., -1.], vec![0., -1., 0.]],
-        }
+    pub fn new(sharpen_type: Option<SharpenAlgorithm>) -> Self {
+        let algorithm = sharpen_type.unwrap_or(SharpenAlgorithm::DefaultKernel);
+        let kernel = match algorithm {
+            SharpenAlgorithm::DefaultKernel => {
+                // provide default kernel to sharpen images
+                vec![vec![0., -1., 0.], vec![-1., 5., -1.], vec![0., -1., 0.]]
+            }
+            // use laplacian operator to sharpen image
+            SharpenAlgorithm::Laplacian => {
+                vec![vec![0., -1., 0.], vec![-1., 4., -1.], vec![0., -1., 0.]]
+            }
+        };
+        Self { kernel, algorithm }
     }
-}
 
-impl Filtering for Sharpen {
-    fn filter(&self, img: RgbaImage) -> Result<RgbaImage, Error> {
+    fn convolution(&self, img: &RgbaImage) -> RgbaImage {
         let (width, height) = img.dimensions();
 
         let mut sharpen_img = RgbaImage::new(width, height);
@@ -53,6 +68,20 @@ impl Filtering for Sharpen {
             }
         }
 
-        Ok(sharpen_img)
+        sharpen_img
+    }
+}
+
+impl Filtering for Sharpen {
+    fn filter(&self, img: RgbaImage) -> Result<RgbaImage, Error> {
+        let mut sharpen_img = self.convolution(&img);
+
+        match self.algorithm {
+            SharpenAlgorithm::DefaultKernel => Ok(sharpen_img),
+            SharpenAlgorithm::Laplacian => {
+                sharpen_img = add(&img, &sharpen_img).unwrap();
+                Ok(sharpen_img)
+            }
+        }
     }
 }

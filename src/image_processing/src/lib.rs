@@ -84,11 +84,48 @@ pub fn gamma_correction(img: &RgbaImage, gamma: f64) -> Result<RgbaImage, Error>
     // compute gamma correction to apply
     let gamma_correction = 1.0 / gamma;
 
-    for (x,y, pixel) in img.enumerate_pixels() {
-        let gamma_corrected_pixel = pixel.map(|channel_value| (255.0 * (channel_value as f64 / 255.0).powf(gamma_correction)) as u8);
+    for (x, y, pixel) in img.enumerate_pixels() {
+        let gamma_corrected_pixel = pixel.map(|channel_value| {
+            (255.0 * (channel_value as f64 / 255.0).powf(gamma_correction)) as u8
+        });
 
         corrected_img[(x, y)] = gamma_corrected_pixel;
     }
 
     Ok(corrected_img)
+}
+
+/// Add image pixels value from another one.
+/// Values are clamped to stay in [0, 255] range.
+///
+/// Invariant :
+/// - Both image must have the same dimension.
+pub fn add(img1: &RgbaImage, img2: &RgbaImage) -> Result<RgbaImage, Error> {
+    let (width, height) = img1.dimensions();
+    let (second_width, second_height) = img1.dimensions();
+
+    if width != second_width || height != second_height {
+        return Err(Error::DifferentImagesDimensions);
+    }
+
+    let mut addition_result = RgbaImage::new(width, height);
+
+    for y in 0..height {
+        for x in 0..width {
+            let mut resulting_pixel: Rgba<u8> = Rgba([0; 4]);
+
+            for channel_index in 0..4 {
+                let channel_value1 = img1.get_pixel(x as u32, y as u32).channels()[channel_index];
+                let channel_value2 = img2.get_pixel(x as u32, y as u32).channels()[channel_index];
+
+                let add_value = (channel_value1 as u16 + channel_value2 as u16).clamp(0, 255);
+
+                resulting_pixel[channel_index] = add_value as u8;
+            }
+
+            addition_result[(x, y)] = resulting_pixel;
+        }
+    }
+
+    Ok(addition_result)
 }
