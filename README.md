@@ -11,10 +11,10 @@ The tool works as a CLI. It takes several arguments as shown below. Notes that y
 
 - INPUT_FILE_PATH : The path of the file to process
 - OUTPUT_FILE_PATH : The path where to store resulting image
-- COMMAND : the operation to perform.
+- COMMAND : the operation to perform. It may require further parameters, depending on the desired operation.
 
 Example :  
-`princeps_mathematicarum_imaginum.exe /path/to/my/image/mountain-8487679_1920.jpg /path/to/my/image/blurred_mountain.png filter gaussian_blur 0.8`
+`princeps_mathematicarum_imaginum.exe /path/to/my/image/mountain-8487679_1920.jpg /path/to/my/image/blurred_mountain.png filter gaussian_blur --sigma 0.8`
 
 You can run command with `--help` flag to display help documentation.
 
@@ -23,12 +23,12 @@ You can run command with `--help` flag to display help documentation.
 1. inverse (See [full documentation on inversion operation here](#inversion-operation))
 2. gamma-correction (See [full documentation on gamma correction here](#gamma-correction)) :
 
-- GAMMA : the gamma value to use for correction, a floating value
+&nbsp;- GAMMA : the gamma value to use for correction, a floating value
 
 3. filter (See [full documentation on available filters and their usage here](#filters)) :
 
-- FILTER_TYPE : specifies the type of filter to apply
-- FILTER_PARAMETER : (optional) an additional parameter, depending on filter type
+&nbsp;- FILTER_TYPE : specifies the type of filter to apply
+&nbsp;- FILTER_PARAMETER : (optional) an additional parameter, depending on filter type
 
 ## Available basic operations
 
@@ -83,7 +83,7 @@ Resulting edge detection using Sobel Filter
 
 This algorithm blurs a given image using the Gaussian function. It takes a sigma value to define the size of the kernel used to blur every pixel of the given image. The Gaussian function is then used to fill the kernel with the neighbours weights.
 
-Use `princeps_mathematicarum_imaginum.exe <INPUT_FILE_PATH> <OUTPUT_FILE_PATH> filter gaussian_blur [FILTER_PARAMETER]` command to apply it to input image, where FILTER_PARAMETER is the sigma value to use. If no sigma value is given, the kernel will be computed with a default value of 3.0.
+Use `princeps_mathematicarum_imaginum.exe <INPUT_FILE_PATH> <OUTPUT_FILE_PATH> filter gaussian_blur --sigma [SIGMA_VALUE]` command to apply it to input image, where SIGMA_VALUE is the sigma value to use. Note that sigma parameter is optional. If sigma flag is not specified, the kernel will be computed with a default value of 3.0.
 
 ![Test image as moutains landscape](doc/images/mountain-8487679_1920.jpg)
 Example of an input image  
@@ -102,7 +102,7 @@ Furthermore, this separability allows us to parallelize image treatement, as now
 
 ### Sharpen
 
-Use `princeps_mathematicarum_imaginum.exe <INPUT_FILE_PATH> <OUTPUT_FILE_PATH> filter sharpen` command to sharpen the input image.
+Use `princeps_mathematicarum_imaginum.exe <INPUT_FILE_PATH> <OUTPUT_FILE_PATH> filter sharpen --algorithm [ALGORITHM_NAME]` command to sharpen the input image.
 
 ![Old Manhattan image from Courtauld institute](doc/images/manhattan.jpg)
 Example of an input image from Courtauld institute collection
