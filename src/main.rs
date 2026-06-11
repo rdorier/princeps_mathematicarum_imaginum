@@ -28,7 +28,7 @@ enum Commands {
         /// This is a positional required argument
         filter_type: String,
 
-        /// An additional parameter, depending on filter type
+        /// Parameter used to specify sigma value to give to some filters
         /// This optional parameter is an explicit flag
         #[arg(long = "sigma")]
         sigma: Option<f64>,

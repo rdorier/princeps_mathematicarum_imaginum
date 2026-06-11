@@ -111,3 +111,12 @@ Example of an input image from Courtauld institute collection
 
 ![Resulting sharpen image](doc/images/sharpen.png)
 Resulting sharpen image
+
+### Futur improvements :
+
+For Sharpen :
+
+- default kernel does the same as laplacian operation, so implement unsharp masking instead
+- implement deconvolution (e.g., Richardson-Lucy, Wiener) : These are advanced techniques used when the image is blurred due to specific causes like camera shake or out-of-focus lenses.
+
+Implement Global Histogram Equalization (cf https://medium.com/@wilson.linzhe/digital-image-processing-in-c-chapter-4-edge-detection-and-grayscale-transformation-laplacian-dfb8de02f213 ?)
