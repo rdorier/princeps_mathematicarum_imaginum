@@ -102,6 +102,8 @@ Furthermore, this separability allows us to parallelize image treatement, as now
 
 ### Sharpen
 
+The sharpen filter provides a way to remove blur from image by enhancing edges or high spatial frequency components.
+
 Use `princeps_mathematicarum_imaginum.exe <INPUT_FILE_PATH> <OUTPUT_FILE_PATH> filter sharpen --algorithm [ALGORITHM_NAME]` command to sharpen the input image.
 
 ![Old Manhattan image from Courtauld institute](doc/images/manhattan.jpg)
