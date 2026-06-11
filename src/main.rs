@@ -25,14 +25,13 @@ enum Commands {
     },
     Filter {
         /// Specify the type of filter to apply.
-        /// This may be used as a positional argument or a flag
-        #[arg(long = "filter-type")]
+        /// This is a positional required argument
         filter_type: String,
 
         /// An additional parameter, depending on filter type
         /// This optional parameter is an explicit flag
-        #[arg(long = "filter-parameter")]
-        filter_parameter: Option<f64>,
+        #[arg(long = "sigma")]
+        sigma: Option<f64>,
 
         /// Parameter used to specify the algorithm name to use for some filters
         /// This optional parameter is an explicit flag
@@ -64,7 +63,7 @@ fn main() -> Result<(), Error> {
         }
         Commands::Filter {
             filter_type,
-            filter_parameter,
+            sigma,
             algorithm,
         } => match filter_type.as_str() {
             "sobel" => {
@@ -72,7 +71,7 @@ fn main() -> Result<(), Error> {
                 sobel_filter.filter(img).map_err(Error::FailedFilter)
             }
             "gaussian_blur" => {
-                let sigma = filter_parameter.unwrap_or(3.0);
+                let sigma = sigma.unwrap_or(3.0);
                 let gaussian_blur_filter = GaussianBlur::try_new(sigma)
                     .with_context(|| "Failed to initialize Gaussian Blur kernel")?;
                 gaussian_blur_filter
