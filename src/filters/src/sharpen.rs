@@ -1,12 +1,13 @@
 use image::{Pixel, Rgba, RgbaImage};
-use image_processing::add;
+use image_processing::{add, substract};
 
-use crate::{Error, Filtering};
+use crate::{Error, Filtering, GaussianBlur};
 
 #[derive(Debug)]
 pub enum SharpenAlgorithm {
     DefaultKernel,
     Laplacian,
+    UnsharpMasking,
 }
 
 pub struct Sharpen {
@@ -26,6 +27,7 @@ impl Sharpen {
             SharpenAlgorithm::Laplacian => {
                 vec![vec![0., -1., 0.], vec![-1., 4., -1.], vec![0., -1., 0.]]
             }
+            SharpenAlgorithm::UnsharpMasking => vec![vec![]], // Unsharp Masking doesn't use a kernel
         };
         Self { kernel, algorithm }
     }
@@ -70,18 +72,35 @@ impl Sharpen {
 
         sharpen_img
     }
+
+    fn unsharp_masking(&self, img: &RgbaImage) -> Result<RgbaImage, Error> {
+        // create a blur version of the original image
+        let gaussian_blur_algo = GaussianBlur::try_new(3.0).unwrap(); // SAFETY sigma value greater than 0
+        let blurred_img = gaussian_blur_algo.filter(img.clone())?;
+
+        // substract blurred image from the original to get mask (which contains only high-frequency details/edges)
+        let mask = substract(img, &blurred_img).unwrap(); // SAFETY blurred image created from original has same dimension
+
+        // add mask with a scale to enforce high-frequency details/edges
+        // TODO : add scaled with optional scale parameter ?
+        let sharpen_image = add(img, &mask).unwrap(); // SAFETY mask image has same dimension than original image
+        Ok(sharpen_image)
+    }
 }
 
 impl Filtering for Sharpen {
     fn filter(&self, img: RgbaImage) -> Result<RgbaImage, Error> {
-        let mut sharpen_img = self.convolution(&img);
-
         match self.algorithm {
-            SharpenAlgorithm::DefaultKernel => Ok(sharpen_img),
+            SharpenAlgorithm::DefaultKernel => {
+                let sharpen_img = self.convolution(&img);
+                Ok(sharpen_img)
+            }
             SharpenAlgorithm::Laplacian => {
+                let mut sharpen_img = self.convolution(&img);
                 sharpen_img = add(&img, &sharpen_img).unwrap();
                 Ok(sharpen_img)
             }
+            SharpenAlgorithm::UnsharpMasking => self.unsharp_masking(&img),
         }
     }
 }

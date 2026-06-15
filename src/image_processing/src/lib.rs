@@ -129,3 +129,43 @@ pub fn add(img1: &RgbaImage, img2: &RgbaImage) -> Result<RgbaImage, Error> {
 
     Ok(addition_result)
 }
+
+/// Substract image pixels value from another one.
+/// Values are clamped to stay in [0, 255] range.
+///
+/// Invariant :
+/// - Both image must have the same dimension.
+pub fn substract(img1: &RgbaImage, img2: &RgbaImage) -> Result<RgbaImage, Error> {
+    let (width, height) = img1.dimensions();
+    let (second_width, second_height) = img1.dimensions();
+
+    if width != second_width || height != second_height {
+        return Err(Error::DifferentImagesDimensions);
+    }
+
+    let mut substract_result = RgbaImage::new(width, height);
+
+    for y in 0..height {
+        for x in 0..width {
+            let mut resulting_pixel: Rgba<u8> = Rgba([0; 4]);
+
+            for channel_index in 0..4 {
+                let channel_value1 = img1.get_pixel(x as u32, y as u32).channels()[channel_index];
+                let channel_value2 = img2.get_pixel(x as u32, y as u32).channels()[channel_index];
+
+                // substract channel values and clamp negative value to 0
+                let sub_value = if channel_value2 > channel_value1 {
+                    0
+                } else {
+                    channel_value1 - channel_value2
+                };
+
+                resulting_pixel[channel_index] = sub_value;
+            }
+
+            substract_result[(x, y)] = resulting_pixel;
+        }
+    }
+
+    Ok(substract_result)
+}

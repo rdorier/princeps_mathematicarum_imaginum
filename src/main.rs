@@ -82,6 +82,7 @@ fn main() -> Result<(), Error> {
                 let algorithm_name = algorithm.unwrap_or(String::from("default"));
                 let algorithm = match algorithm_name.as_str() {
                     "laplacian" => SharpenAlgorithm::Laplacian,
+                    "usm" => SharpenAlgorithm::UnsharpMasking,
                     _ => SharpenAlgorithm::DefaultKernel,
                 };
                 let sharpen_filter = Sharpen::new(Some(algorithm));
