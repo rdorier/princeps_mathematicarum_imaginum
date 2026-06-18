@@ -10,6 +10,16 @@ pub enum SharpenAlgorithm {
     UnsharpMasking,
 }
 
+impl From<&str> for SharpenAlgorithm {
+    fn from(value: &str) -> Self {
+        match value {
+            "laplacian" => SharpenAlgorithm::Laplacian,
+            "usm" => SharpenAlgorithm::UnsharpMasking,
+            _ => SharpenAlgorithm::DefaultKernel,
+        }
+    }
+}
+
 pub struct Sharpen {
     kernel: Vec<Vec<f64>>,
     algorithm: SharpenAlgorithm,

@@ -80,11 +80,7 @@ fn main() -> Result<(), Error> {
             }
             "sharpen" => {
                 let algorithm_name = algorithm.unwrap_or(String::from("default"));
-                let algorithm = match algorithm_name.as_str() {
-                    "laplacian" => SharpenAlgorithm::Laplacian,
-                    "usm" => SharpenAlgorithm::UnsharpMasking,
-                    _ => SharpenAlgorithm::DefaultKernel,
-                };
+                let algorithm = SharpenAlgorithm::from(algorithm_name.as_str());
                 let sharpen_filter = Sharpen::new(Some(algorithm));
                 sharpen_filter.filter(img).map_err(Error::FailedFilter)
             }
