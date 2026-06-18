@@ -104,13 +104,17 @@ Furthermore, this separability allows us to parallelize image treatement, as now
 
 The sharpen filter provides a way to remove blur from image by enhancing edges or high spatial frequency components.
 
-Use `princeps_mathematicarum_imaginum.exe <INPUT_FILE_PATH> <OUTPUT_FILE_PATH> filter sharpen --algorithm [ALGORITHM_NAME]` command to sharpen the input image.
+Use `princeps_mathematicarum_imaginum.exe <INPUT_FILE_PATH> <OUTPUT_FILE_PATH> filter sharpen --algorithm [ALGORITHM_NAME]` command to sharpen the input image.  
+Several algorithms are available for this sharpen filter.
+
+- Laplacian filter (`--algorithm laplacian`): convolve the image with a Laplacian kernel, representing a high pass filter that emphases high-frequency changes, representing edges. The resulting filtered image is then added to the original image to accentuate edges contrast.
+- Unsharp Masking (`--algorithm usm`) : This algorithm creates a blur version of the original image then substract it from the original one to get a mask, which contains only high-frequency details/edges. It then add mask to orignal image with a scale to enforce edges.
 
 ![Old Manhattan image from Courtauld institute](doc/images/manhattan.jpg)
 Example of an input image from Courtauld institute collection
 
 ![Resulting sharpen image](doc/images/sharpen.png)
-Resulting sharpen image
+Resulting sharpen image using Laplacian filter
 
 ![Resulting sharpen image](doc/images/usm.png)
 Resulting sharpen image with Unsharp Masking
