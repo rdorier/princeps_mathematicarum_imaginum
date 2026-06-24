@@ -37,6 +37,11 @@ enum Commands {
         /// This optional parameter is an explicit flag
         #[arg(long = "algorithm")]
         algorithm: Option<String>,
+
+        /// Parameter used to specify scale coefficient to give to some filters
+        /// This optional parameter is an explicit flag
+        #[arg(long = "scale")]
+        scale: Option<f64>,
     },
 }
 
@@ -65,6 +70,7 @@ fn main() -> Result<(), Error> {
             filter_type,
             sigma,
             algorithm,
+            scale,
         } => match filter_type.as_str() {
             "sobel" => {
                 let sobel_filter = SobelFilter;
@@ -81,7 +87,7 @@ fn main() -> Result<(), Error> {
             "sharpen" => {
                 let algorithm_name = algorithm.unwrap_or(String::from("default"));
                 let algorithm = SharpenAlgorithm::from(algorithm_name.as_str());
-                let sharpen_filter = Sharpen::new(Some(algorithm));
+                let sharpen_filter = Sharpen::new(Some(algorithm), scale);
                 sharpen_filter.filter(img).map_err(Error::FailedFilter)
             }
             _ => Err(Error::UnknownFilter(filter_type)),

@@ -98,11 +98,16 @@ pub fn gamma_correction(img: &RgbaImage, gamma: f64) -> Result<RgbaImage, Error>
 /// Add image pixels value from another one.
 /// Values are clamped to stay in [0, 255] range.
 ///
+/// # Arguments
+/// - `coef` - Optional coefficient to control the amount of the second image to add. Default value is 1, meaning the image is added as it is.
+///
 /// Invariant :
 /// - Both image must have the same dimension.
-pub fn add(img1: &RgbaImage, img2: &RgbaImage) -> Result<RgbaImage, Error> {
+pub fn add(img1: &RgbaImage, img2: &RgbaImage, coef: Option<f64>) -> Result<RgbaImage, Error> {
     let (width, height) = img1.dimensions();
     let (second_width, second_height) = img1.dimensions();
+
+    let scale_coef = coef.unwrap_or(1.0);
 
     if width != second_width || height != second_height {
         return Err(Error::DifferentImagesDimensions);
@@ -118,7 +123,9 @@ pub fn add(img1: &RgbaImage, img2: &RgbaImage) -> Result<RgbaImage, Error> {
                 let channel_value1 = img1.get_pixel(x as u32, y as u32).channels()[channel_index];
                 let channel_value2 = img2.get_pixel(x as u32, y as u32).channels()[channel_index];
 
-                let add_value = (channel_value1 as u16 + channel_value2 as u16).clamp(0, 255);
+                let add_value = (channel_value1 as u16
+                    + (scale_coef * channel_value2 as f64) as u16)
+                    .clamp(0, 255);
 
                 resulting_pixel[channel_index] = add_value as u8;
             }

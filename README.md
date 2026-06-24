@@ -107,8 +107,9 @@ The sharpen filter provides a way to remove blur from image by enhancing edges o
 Use `princeps_mathematicarum_imaginum.exe <INPUT_FILE_PATH> <OUTPUT_FILE_PATH> filter sharpen --algorithm [ALGORITHM_NAME]` command to sharpen the input image.  
 Several algorithms are available for this sharpen filter.
 
-- Laplacian filter (`--algorithm laplacian`): convolve the image with a Laplacian kernel, representing a high pass filter that emphases high-frequency changes, representing edges. The resulting filtered image is then added to the original image to accentuate edges contrast.
-- Unsharp Masking (`--algorithm usm`) : This algorithm creates a blur version of the original image then substract it from the original one to get a mask, which contains only high-frequency details/edges. It then add mask to orignal image with a scale to enforce edges.
+- Laplacian filter (`--algorithm laplacian`): convolve the image with a Laplacian kernel, representing a high pass filter that emphases high-frequency changes, representing edges. The resulting filtered image is then added to the original image to accentuate edges contrast. You can specify a scale coefficient to control the amount of edges added using the command `--scale [FLOATING_VALUE]`.
+- Unsharp Masking (`--algorithm usm`) : This algorithm creates a blur version of the original image then substract it from the original one to get a mask, which contains only high-frequency details/edges. It then add mask to original image with a scale to enforce edges. The scale coefficient may be specified using the command `--scale [FLOATING_VALUE]`.
+- Default sharpen kernel (`--algorithm default`): default kernel used to compute sharpen filter. It is mathematically equivalent to Laplacian filter, with the only difference that you cannot specify a scale coefficient to control the amount of edges addition. If no algorithm is specified, the sharpen filter will use this method.
 
 ![Old Manhattan image from Courtauld institute](doc/images/manhattan.jpg)
 Example of an input image from Courtauld institute collection

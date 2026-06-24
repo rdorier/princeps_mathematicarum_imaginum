@@ -23,10 +23,11 @@ impl From<&str> for SharpenAlgorithm {
 pub struct Sharpen {
     kernel: Vec<Vec<f64>>,
     algorithm: SharpenAlgorithm,
+    mask_scale: Option<f64>,
 }
 
 impl Sharpen {
-    pub fn new(sharpen_type: Option<SharpenAlgorithm>) -> Self {
+    pub fn new(sharpen_type: Option<SharpenAlgorithm>, mask_scale: Option<f64>) -> Self {
         let algorithm = sharpen_type.unwrap_or(SharpenAlgorithm::DefaultKernel);
         let kernel = match algorithm {
             SharpenAlgorithm::DefaultKernel => {
@@ -39,7 +40,11 @@ impl Sharpen {
             }
             SharpenAlgorithm::UnsharpMasking => vec![vec![]], // Unsharp Masking doesn't use a kernel
         };
-        Self { kernel, algorithm }
+        Self {
+            kernel,
+            algorithm,
+            mask_scale,
+        }
     }
 
     fn convolution(&self, img: &RgbaImage) -> RgbaImage {
@@ -92,8 +97,7 @@ impl Sharpen {
         let mask = substract(img, &blurred_img).unwrap(); // SAFETY blurred image created from original has same dimension
 
         // add mask with a scale to enforce high-frequency details/edges
-        // TODO : add scaled with optional scale parameter ?
-        let sharpen_image = add(img, &mask).unwrap(); // SAFETY mask image has same dimension than original image
+        let sharpen_image = add(img, &mask, self.mask_scale).unwrap(); // SAFETY mask image has same dimension than original image
         Ok(sharpen_image)
     }
 }
@@ -107,7 +111,7 @@ impl Filtering for Sharpen {
             }
             SharpenAlgorithm::Laplacian => {
                 let mut sharpen_img = self.convolution(&img);
-                sharpen_img = add(&img, &sharpen_img).unwrap();
+                sharpen_img = add(&img, &sharpen_img, self.mask_scale).unwrap();
                 Ok(sharpen_img)
             }
             SharpenAlgorithm::UnsharpMasking => self.unsharp_masking(&img),
