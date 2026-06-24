@@ -122,9 +122,10 @@ Resulting sharpen image with Unsharp Masking
 
 ### Futur improvements :
 
-For Sharpen :
+Sharpen :
 
-- default kernel does the same as laplacian operation
 - implement deconvolution (e.g., Richardson-Lucy, Wiener) : These are advanced techniques used when the image is blurred due to specific causes like camera shake or out-of-focus lenses.
 
-Implement Global Histogram Equalization (cf https://medium.com/@wilson.linzhe/digital-image-processing-in-c-chapter-4-edge-detection-and-grayscale-transformation-laplacian-dfb8de02f213 ?)
+Other image processing :
+
+- implement Global Histogram Equalization (cf https://medium.com/@wilson.linzhe/digital-image-processing-in-c-chapter-4-edge-detection-and-grayscale-transformation-laplacian-dfb8de02f213 ?)
