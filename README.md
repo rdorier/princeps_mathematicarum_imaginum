@@ -11,20 +11,24 @@ The tool works as a CLI. It takes several arguments as shown below. Notes that y
 
 - INPUT_FILE_PATH : The path of the file to process
 - OUTPUT_FILE_PATH : The path where to store resulting image
-- COMMAND : the operation to perform.
+- COMMAND : the operation to perform. It may require further parameters, depending on the desired operation.
 
 Example :  
-`princeps_mathematicarum_imaginum.exe /path/to/my/image/mountain-8487679_1920.jpg /path/to/my/image/blurred_mountain.png filter gaussian_blur 0.8`
+`princeps_mathematicarum_imaginum.exe /path/to/my/image/mountain-8487679_1920.jpg /path/to/my/image/blurred_mountain.png filter gaussian_blur --sigma 0.8`
 
 You can run command with `--help` flag to display help documentation.
 
 ### OPERATION argument
-1) inverse (See [full documentation on inversion operation here](#inversion-operation))
-2) gamma-correction (See [full documentation on gamma correction here](#gamma-correction)) : 
-- GAMMA : the gamma value to use for correction, a floating value
-3) filter (See [full documentation on available filters and their usage here](#filters)) :
-- FILTER_TYPE : specifies the type of filter to apply
-- FILTER_PARAMETER : (optional) an additional parameter, depending on filter type
+
+1. inverse (See [full documentation on inversion operation here](#inversion-operation))
+2. gamma-correction (See [full documentation on gamma correction here](#gamma-correction)) :
+
+&nbsp;- GAMMA : the gamma value to use for correction, a floating value
+
+3. filter (See [full documentation on available filters and their usage here](#filters)) :
+
+&nbsp;- FILTER_TYPE : specifies the type of filter to apply
+&nbsp;- FILTER_PARAMETER : (optional) an additional parameter, depending on filter type
 
 ## Available basic operations
 
@@ -47,18 +51,18 @@ Resulting inverted image
 
 Gamma represents the non‑linear relationship between the numerical values of an image (input) and the actual brightness produced on a display (output). It defines how midtones, shadows and highlights are distributed.
 
-Most images are stored using a gamma‑encoded curve, so displays apply the inverse curve to reproduce the correct luminance. This is the goal of the gamma correction operation available in this tool.  
+Most images are stored using a gamma‑encoded curve, so displays apply the inverse curve to reproduce the correct luminance. This is the goal of the gamma correction operation available in this tool.
 
-Use `princeps_mathematicarum_imaginum.exe <INPUT_FILE_PATH> <OUTPUT_FILE_PATH> gamma-correction <GAMMA>` command to correct image, depending on the given gamma value.  
+Use `princeps_mathematicarum_imaginum.exe <INPUT_FILE_PATH> <OUTPUT_FILE_PATH> gamma-correction <GAMMA>` command to correct image, depending on the given gamma value.
 
 ![Test image as moutains landscape](doc/images/mountain-8487679_1920.jpg)
-Example of an input image  
+Example of an input image
 
 ![Resulting image with gamma 0.8](doc/images/gamma_correction_0.8.png)
 Resulting image with gamma 0.8
 
 ![Resulting image with gamma 2.2](doc/images/gamma_correction_2.2.png)
-Resulting image with gamma 2.2  
+Resulting image with gamma 2.2
 
 ## Available filters
 
@@ -79,7 +83,7 @@ Resulting edge detection using Sobel Filter
 
 This algorithm blurs a given image using the Gaussian function. It takes a sigma value to define the size of the kernel used to blur every pixel of the given image. The Gaussian function is then used to fill the kernel with the neighbours weights.
 
-Use `princeps_mathematicarum_imaginum.exe <INPUT_FILE_PATH> <OUTPUT_FILE_PATH> filter gaussian_blur [FILTER_PARAMETER]` command to apply it to input image, where FILTER_PARAMETER is the sigma value to use. If no sigma value is given, the kernel will be computed with a default value of 3.0.
+Use `princeps_mathematicarum_imaginum.exe <INPUT_FILE_PATH> <OUTPUT_FILE_PATH> filter gaussian_blur --sigma [SIGMA_VALUE]` command to apply it to input image, where SIGMA_VALUE is the sigma value to use. Note that sigma parameter is optional. If sigma flag is not specified, the kernel will be computed with a default value of 3.0.
 
 ![Test image as moutains landscape](doc/images/mountain-8487679_1920.jpg)
 Example of an input image  
@@ -96,11 +100,32 @@ Indeed, the complexity when applying the 2D kernel directly on each pixel is O(k
 
 Furthermore, this separability allows us to parallelize image treatement, as now each row is independent (calculating row R only needs data from row R, and not the ones from previous or following rows) when doing the horizontal pass, and each column is independent when doing the vertical one.
 
-## Goals :
+### Sharpen
 
-1. Done : Basic pixels manipulation with `image` crate(read an image, and apply a simple transformation like color inversion)
-2. Done : Implement a convolution filter (like Sobel one for edges detection)
-3. WIP : Implement several filters (GaussianBlur, EdgeDetection, Sharpen) using POO
-4. TODO : use `rayon` for parallel treatments and have quicker filters
-5. DONE : create a reusable Rust crate with a simple CLI
-6. DONE : add unit tests
+The sharpen filter provides a way to remove blur from image by enhancing edges or high spatial frequency components.
+
+Use `princeps_mathematicarum_imaginum.exe <INPUT_FILE_PATH> <OUTPUT_FILE_PATH> filter sharpen --algorithm [ALGORITHM_NAME]` command to sharpen the input image.  
+Several algorithms are available for this sharpen filter.
+
+- Laplacian filter (`--algorithm laplacian`): convolve the image with a Laplacian kernel, representing a high pass filter that emphases high-frequency changes, representing edges. The resulting filtered image is then added to the original image to accentuate edges contrast. You can specify a scale coefficient to control the amount of edges added using the command `--scale [FLOATING_VALUE]`.
+- Unsharp Masking (`--algorithm usm`) : This algorithm creates a blur version of the original image then substract it from the original one to get a mask, which contains only high-frequency details/edges. It then add mask to original image with a scale to enforce edges. The scale coefficient may be specified using the command `--scale [FLOATING_VALUE]`.
+- Default sharpen kernel (`--algorithm default`): default kernel used to compute sharpen filter. It is mathematically equivalent to Laplacian filter, with the only difference that you cannot specify a scale coefficient to control the amount of edges addition. If no algorithm is specified, the sharpen filter will use this method.
+
+![Old Manhattan image from Courtauld institute](doc/images/manhattan.jpg)
+Example of an input image from Courtauld institute collection
+
+![Resulting sharpen image](doc/images/sharpen.png)
+Resulting sharpen image using Laplacian filter
+
+![Resulting sharpen image](doc/images/usm.png)
+Resulting sharpen image with Unsharp Masking
+
+### Futur improvements :
+
+Sharpen :
+
+- implement deconvolution (e.g., Richardson-Lucy, Wiener) : These are advanced techniques used when the image is blurred due to specific causes like camera shake or out-of-focus lenses.
+
+Other image processing :
+
+- implement Global Histogram Equalization (cf https://medium.com/@wilson.linzhe/digital-image-processing-in-c-chapter-4-edge-detection-and-grayscale-transformation-laplacian-dfb8de02f213 ?)

@@ -87,7 +87,6 @@ impl Filtering for GaussianBlur {
                             }
                         }
 
-                        //blurred_pixel[channel_index] = gaussian_sum as u8;
                         row_data.push(gaussian_sum as u8);
                     }
                 }
